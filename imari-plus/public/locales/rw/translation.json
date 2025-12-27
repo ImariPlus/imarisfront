@@ -1,0 +1,20 @@
+{
+  "dashboard": "Imbonerahamwe",
+  "newTransaction": "Igikorwa Gishya",
+  "dailyTimeline": "Ibyakozwe Uyu Munsi",
+  "payroll": "Umushahara",
+  "expenseTracker": "Amafaranga Yakoreshejwe",
+
+  "enterTransaction": "Andika Igikorwa",
+  "clientName": "Izina ry'Umurwayi",
+  "physician": "Umuganga",
+  "amount": "Amafaranga",
+  "paymentMethod": "Uburyo bwo Kwishyura",
+  "discount": "Kugabanya",
+  "notes": "Ibisobanuro",
+  "save": "Bika",
+  "select": "Hitamo",
+  "cash": "Amafaranga",
+  "mobileMoney": "Mobile Money",
+  "bankTransfer": "Banki"
+}
