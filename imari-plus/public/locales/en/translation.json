@@ -1,0 +1,20 @@
+{
+  "dashboard": "Dashboard",
+  "newTransaction": "New Transaction",
+  "dailyTimeline": "Daily Timeline",
+  "payroll": "Payroll",
+  "expenseTracker": "Expense Tracker",
+
+  "enterTransaction": "Enter Transaction",
+  "clientName": "Client Name",
+  "physician": "Physician",
+  "amount": "Amount",
+  "paymentMethod": "Payment Method",
+  "discount": "Discount",
+  "notes": "Notes",
+  "save": "Save",
+  "select": "Select",
+  "cash": "Cash",
+  "mobileMoney": "Mobile Money",
+  "bankTransfer": "Bank Transfer"
+}
