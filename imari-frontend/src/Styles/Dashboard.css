@@ -1,0 +1,18 @@
+.dashboard-container {
+  padding: 2rem;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.dashboard-card {
+  background: #2e2727;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  text-align: center;
+}

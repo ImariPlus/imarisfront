@@ -6,6 +6,7 @@ i18n
   .use(HttpBackend)
   .use(initReactI18next)
   .init({
+    lng: "en",
     fallbackLng: "en",
     debug: true,
     interpolation: {
@@ -13,6 +14,9 @@ i18n
     },
     backend: {
       loadPath: "/locales/{{lng}}/translation.json",
+    },
+    react: {
+      useSuspense: false,
     },
   });
 

@@ -14,7 +14,7 @@ const App: React.FC = () => {
     switch (active) {
       case "dashboard":
         return <Dashboard />;
-      case "transactions":
+      case "transaction":
         return <NewTransaction />;
       case "timeline":
         return <DailyTimeline />;
