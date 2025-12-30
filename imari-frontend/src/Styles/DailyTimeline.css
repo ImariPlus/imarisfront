@@ -1,0 +1,36 @@
+.timeline-container {
+  padding: 20px;
+}
+
+.timeline-input {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.timeline-input input {
+  flex: 1;
+  padding: 5px 10px;
+}
+
+.timeline-input button {
+  padding: 5px 15px;
+}
+
+.timeline-list {
+  list-style: none;
+  padding: 0;
+}
+
+.timeline-entry {
+  display: flex;
+  gap: 15px;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.timeline-entry.completed {
+  text-decoration: line-through;
+  color: #888;
+}

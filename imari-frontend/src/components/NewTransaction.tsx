@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import "./NewTransaction.css";
 
 interface TransactionFormData {
   clientName: string;
@@ -12,9 +10,7 @@ interface TransactionFormData {
 }
 
 const NewTransaction: React.FC = () => {
-  const { t } = useTranslation();
-
-  const [physicians, setPhysicians]= useState<string[]>([]);
+  const [physicians, setPhysicians] = useState<string[]>([]);
   const [loadingPhysicians, setLoadingPhysicians] = useState(true);
 
   const [formData, setFormData] = useState<TransactionFormData>({
@@ -64,12 +60,12 @@ const NewTransaction: React.FC = () => {
   return (
     <div className="transaction-container">
       <div className="transaction-form">
-        <h2>{t("enterTransaction")}</h2>
+        <h2>Enter Transaction</h2>
 
         <form onSubmit={handleSubmit}>
           {/* Client */}
           <div className="form-group">
-            <label>{t("clientName")}</label>
+            <label>Client Name</label>
             <input
               type="text"
               name="clientName"
@@ -81,7 +77,7 @@ const NewTransaction: React.FC = () => {
 
           {/* Physician */}
           <div className="form-group">
-            <label>{t("physician")}</label>
+            <label>Physician</label>
             <select
               name="physician"
               value={formData.physician}
@@ -89,7 +85,9 @@ const NewTransaction: React.FC = () => {
               disabled={loadingPhysicians}
               required
             >
-              <option value="">{loadingPhysicians ? t("loading") : t("select")}</option>
+              <option value="">
+                {loadingPhysicians ? "Loading..." : "Select"}
+              </option>
               {physicians.map((physician) => (
                 <option key={physician} value={physician}>
                   {physician}
@@ -100,7 +98,7 @@ const NewTransaction: React.FC = () => {
 
           {/* Amount */}
           <div className="form-group">
-            <label>{t("amount")}</label>
+            <label>Amount</label>
             <input
               type="number"
               name="amount"
@@ -112,23 +110,23 @@ const NewTransaction: React.FC = () => {
 
           {/* Payment */}
           <div className="form-group">
-            <label>{t("paymentMethod")}</label>
+            <label>Payment Method</label>
             <select
               name="paymentMethod"
               value={formData.paymentMethod}
               onChange={handleChange}
               required
             >
-              <option value="">{t("select")}</option>
-              <option value="cash">{t("cash")}</option>
-              <option value="mobile">{t("mobileMoney")}</option>
-              <option value="bank">{t("bankTransfer")}</option>
+              <option value="">Select</option>
+              <option value="cash">Cash</option>
+              <option value="mobile">Mobile Money</option>
+              <option value="bank">Bank Transfer</option>
             </select>
           </div>
 
           {/* Discount */}
           <div className="form-group">
-            <label>{t("discount")}</label>
+            <label>Discount</label>
             <input
               type="number"
               name="discount"
@@ -139,7 +137,7 @@ const NewTransaction: React.FC = () => {
 
           {/* Notes */}
           <div className="form-group">
-            <label>{t("notes")}</label>
+            <label>Notes</label>
             <textarea
               name="notes"
               value={formData.notes}
@@ -149,7 +147,7 @@ const NewTransaction: React.FC = () => {
           </div>
 
           <button type="submit" className="submit-btn">
-            {t("save")}
+            Save
           </button>
         </form>
       </div>
