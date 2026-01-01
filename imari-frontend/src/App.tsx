@@ -3,7 +3,7 @@ import Sidebar from "./components/Layout/Sidebar";
 import Dashboard from "./components/Dashboard/Dashboard";
 import NewTransaction from "./components/NewTransaction";
 import DailyTimeline from "./components/DailyTimeline";
-import PayrollModule from "./components/PayrollModule";
+import PayrollModule from "./components/PayrollModule/PayrollModule";
 import ExpenseTracker from "./components/ExpenseTracker";
 import "./App.css";
 

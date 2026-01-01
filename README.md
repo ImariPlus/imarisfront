@@ -17,3 +17,59 @@ I've created the physicians, and Transactions APIs
 - Auth
 - Database
 - Translations in french, Kinyarwanda, Swahili
+
+
+# APIs needed
+## Auth
+- POST   /auth/login
+- POST   /auth/logout
+- GET    /auth/me
+- POST   /auth/register
+- PUT    /users/:id
+## Physicians
+- GET    /physicians
+- POST   /physicians
+- PUT    /physicians/:id
+- DELETE /physicians/:id
+- GET /physicians/:id/stats
+## transactions
+- GET    /transactions
+- POST   /transactions
+- GET    /transactions/:id
+- PUT    /transactions/:id
+- DELETE /transactions/:id
+### Filters
+- GET /transactions?date=2026-01-01
+- GET /transactions?physicianId=123
+- GET /transactions?from=2026-01-01&to=2026-01-31
+## Dashboard
+- GET /dashboard/summary
+- GET /dashboard/recent-transactions
+## Daily Timeline
+- GET /timeline/today
+- GET /timeline?date=2026-01-01
+## Payroll
+- GET /payroll
+- GET /payroll/:physicianId
+- POST /payroll/generate
+- POST /payroll/pay
+## expenses
+- GET    /expenses
+- POST   /expenses
+- PUT    /expenses/:id
+- DELETE /expenses/:id
+## settings
+- GET /settings
+- PUT /settings
+## health & debug
+- GET /health
+
+Database: PostgreSQL (production), SQLite (development)
+
+
+
+
+
+
+
+
