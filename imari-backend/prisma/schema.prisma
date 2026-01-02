@@ -7,22 +7,107 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  
+  role      UserRole
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions Transaction[]
+  payrolls     Payroll[]
+  timelineEntries TimelineEntry[]
+  recordedExpenses Expense[]
+}
+
+enum UserRole {
+  ADMIN
+  STAFF
+  ACCOUNTANT
+}
+
+model Physician {
+  id        String   @id @default(cuid())
+  name      String    @unique
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  transactions Transaction[]
+}
+
 model Transaction {
-  id             String   @id @default(cuid())
-  clientName     String
-  physician      String
-  amount         Float
-  paymentMethod  PaymentMethod
-  discount       Float?    // optional
-  notes          String?   // optional
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id            String         @id @default(cuid())
+  clientName    String
+  amount        Float
+  discount      Float? 
+  notes         String?
+  paymentMethod PaymentMethod
+
+  physicianId   String
+  physician     Physician     @relation(fields: [physicianId], references: [id])
+
+  createdById   String
+  createdBy     User          @relation(fields: [createdById], references: [id])
+
+  createdAt     DateTime       @default(now())
 }
 
 enum PaymentMethod {
   CASH
   MOBILE
   BANK
-  CREDIT
 }
 
+model TimelineEntry {
+  id          String   @id @default(cuid())
+  description String
+  type        TimelineType
+  createdAt   DateTime @default(now())
+
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+enum TimelineType {
+  TRANSACTION
+  EXPENSE
+  PAYROLL
+  NOTE
+}
+
+model Payroll {
+  id          String   @id @default(cuid())
+  month       String
+  staffName   String
+  baseSalary  Float
+  bonus       Float?    default(0)
+  deductions  Float?    default(0)
+  netPay      Float
+
+  processedById String
+  processedBy   User @relation(fields: [processedById], references: [id])
+
+  createdAt   DateTime @default(now())
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  title       String
+  amount      Float
+  category    ExpenseCategory
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  recordedById String
+  recordedBy   User @relation(fields: [recordedById], references: [id])
+}
+
+enum ExpenseCategory {
+  SUPPLIES
+  UTILITIES
+  RENT
+  SALARY
+  OTHER
+}
