@@ -3,12 +3,14 @@ import cors from "cors";
 import transactionRoutes from "./routes/transactions.routes";
 import physiciansRoutes from "./routes/physicians.routes";
 import userRoutes from "./routes/userRoutes";
+import healthRoutes from "./routes/health.routes";
 
 const app = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use("/api/health", healthRoutes);
 
 // Simple request logger
 app.use((req: Request, _res: Response, next: NextFunction) => {
