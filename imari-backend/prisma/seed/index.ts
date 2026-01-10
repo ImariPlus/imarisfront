@@ -1,34 +1,46 @@
 import { PrismaClient, PaymentMethod, UserRole } from "@prisma/client";
+import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log("🌱 Seeding database...");
 
-  /**
-   * CLEAN EXISTING DATA (safe for dev)
-   * Remove this block if you want cumulative seeds
-   */
+  // --- ENV GUARD ---
+  if (!process.env.ADMIN_PASSWORD) {
+    throw new Error("❌ ADMIN_PASSWORD is not set in environment variables");
+  }
+
+  // --- CLEAN EXISTING DATA (DEV ONLY) ---
   await prisma.transaction.deleteMany();
   await prisma.expense.deleteMany();
 
-  // USERS
-  const user = await prisma.user.upsert({
+  // --- ADMIN USER ---
+  const hashedPassword = await bcrypt.hash(
+    process.env.ADMIN_PASSWORD,
+    10
+  );
+
+  const adminUser = await prisma.user.upsert({
     where: { email: "admin@imari.com" },
-    update: {},
+    update: {
+      password: hashedPassword,
+      role: UserRole.ADMIN,
+    },
     create: {
       email: "admin@imari.com",
       name: "Admin",
       role: UserRole.ADMIN,
+      password: hashedPassword,
     },
   });
 
-  // PHYSICIANS
+  // --- PHYSICIANS ---
   const physicianNames = ["Dr. Ally", "Dr. Joyeuse", "Dr. Bwiza"];
 
   for (const name of physicianNames) {
     await prisma.physician.upsert({
-      where: { id: name },
+      where: { name }, // 👈 must be a UNIQUE field
       update: {},
       create: { name },
     });
@@ -40,7 +52,7 @@ async function main() {
     throw new Error("❌ No physicians found. Seed failed.");
   }
 
-  // TRANSACTIONS (last 14 days)
+  // --- TRANSACTIONS (last 14 days) ---
   for (let i = 0; i < 40; i++) {
     const physician =
       allPhysicians[Math.floor(Math.random() * allPhysicians.length)];
@@ -51,20 +63,20 @@ async function main() {
 
     await prisma.transaction.create({
       data: {
+        clientName: "Seed Client",
         amount: Math.floor(Math.random() * 200_000) + 20_000,
         paymentMethod:
           Math.random() > 0.7
             ? PaymentMethod.CASH
             : PaymentMethod.MOBILE,
         physicianId: physician.id,
-        clientName: "Seed Client",
-        createdById: user.id,
+        createdById: adminUser.id,
         createdAt,
       },
     });
   }
 
-  // EXPENSES (last 30 days)
+  // --- EXPENSES (last 30 days) ---
   for (let i = 0; i < 10; i++) {
     const daysAgo = Math.floor(Math.random() * 30);
     const createdAt = new Date();
@@ -75,7 +87,7 @@ async function main() {
         title: "Clinic expense",
         amount: Math.floor(Math.random() * 100_000) + 10_000,
         category: "SUPPLIES",
-        recordedById: user.id,
+        recordedById: adminUser.id,
         createdAt,
       },
     });
