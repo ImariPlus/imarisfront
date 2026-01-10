@@ -4,6 +4,7 @@ import transactionRoutes from "./routes/transactions.routes";
 import physiciansRoutes from "./routes/physicians.routes";
 import userRoutes from "./routes/userRoutes";
 import healthRoutes from "./routes/health.routes";
+import authRoutes from "./routes/auth.routes";
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.get("/", (_req: Request, res: Response) => {
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/physicians", physiciansRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/auth", authRoutes);
 
 // 404 handler
 app.use((_req: Request, res: Response) => {

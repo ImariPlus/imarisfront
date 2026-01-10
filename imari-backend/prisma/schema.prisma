@@ -11,11 +11,11 @@ model User {
   id        String   @id @default(cuid())
   name      String
   email     String   @unique
-  password  String
+  password  String   
   
   role      UserRole @default(USER)
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
 
   transactions Transaction[]
   payrolls     Payroll[]
@@ -25,7 +25,7 @@ model User {
 
 enum UserRole {
   ADMIN
-  STAFF
+  USER
   ACCOUNTANT
 }
 
@@ -83,8 +83,8 @@ model Payroll {
   month       String
   staffName   String
   baseSalary  Float
-  bonus       Float?    default(0)
-  deductions  Float?    default(0)
+  bonus       Float?    @default(0)
+  deductions  Float?    @default(0)
   netPay      Float
 
   processedById String
