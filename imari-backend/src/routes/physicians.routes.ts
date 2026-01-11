@@ -1,20 +1,17 @@
-import { Router, Request, Response } from "express";
+import { Router } from "express";
+import * as controller from "../controllers/physicians.controller";
+import { auth } from "../middlewares/auth.middleware";
+import { isAdmin } from "../middlewares/admin.middleware";
 
 const router = Router();
 
-// 🔹 TEMP DATA (later from DB)
-const physicians = [
-  { id: 1, name: "Dr. Habimana Paul" },
-  { id: 2, name: "Dr. Uwase Paula" },
-  { id: 3, name: "Dr. Niyonzima Hakim" },
-];
-
-// 🔹 GET all physicians
-router.get("/", (_req: Request, res: Response) => {
-  res.json({
-    message: "List of physicians",
-    data: physicians,
-  });
-});
+router.get("/", auth, controller.getPhysicians);
+router.get("/:id", auth, controller.getPhysician);
+router.post("/", auth, isAdmin, controller.createPhysician);
+router.put("/:id", auth, isAdmin, controller.updatePhysician);
+router.delete("/:id", auth, isAdmin, controller.deletePhysician);
+router.get("/:id/stats", auth, controller.getPhysicianStats);
+router.get("/:id/transactions", auth, controller.getPhysicianTransactions);
+router.get("/:id/payroll-review", auth, controller.getPhysicianPayrollReview);
 
 export default router;

@@ -1,23 +1,17 @@
 import { Router } from "express";
+import * as transactionsController from "../controllers/transactions.controller";
+import { auth, AuthRequest } from "../middlewares/auth.middleware";
+import { isAdmin } from "../middlewares/admin.middleware";
 
 const router = Router();
 
-// GET all transactions (daily view)
-router.get("/", (_req, res) => {
-  res.json({
-    message: "List of transactions (placeholder)",
-    data: [],
-  });
-});
+// Auth required for all transaction routes
+router.use(auth);
 
-// POST new transaction
-router.post("/", (req, res) => {
-  const transaction = req.body;
-
-  res.status(201).json({
-    message: "Transaction created",
-    data: transaction,
-  });
-});
+router.get("/", transactionsController.getTransactions);
+router.get("/:id", transactionsController.getTransaction);
+router.post("/", transactionsController.createTransaction);
+router.put("/:id", isAdmin, transactionsController.updateTransaction);
+router.delete("/:id", isAdmin, transactionsController.deleteTransaction);
 
 export default router;
