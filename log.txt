@@ -23,17 +23,20 @@ also just finished doing (07/01/26) the Users API, there are still thing missing
 
 # APIs needed
 ## Auth(later PLEASE MOVE THE SECRET FULLY TO ENV!!!! WITH JWT)
-- POST   /auth/login
-- POST   /auth/logout
-- GET    /auth/me
-- POST   /auth/register
-- PUT    /users/:id
+- POST   /auth/login✔
+- POST   /auth/logout || lookout for production hardening stuff like storing sessions in db, blacklisting jwts, rotate refresh tokens
+- GET    /auth/me✔
+- POST   /auth/register❌
+- PUT    /users/:id✔
 ## Physicians
 - GET    /physicians✔
-- POST   /physicians
-- PUT    /physicians/:id
-- DELETE /physicians/:id
-- GET /physicians/:id/stats
+- POST   /physicians✔
+- PUT    /physicians/:id✔
+- DELETE /physicians/:id✔
+- GET /physicians/:id/stats✔
+- GET /physicians/:id/transactions
+- GET /physicians/:id/expenses
+- GET /physicians/:id/payroll-review
 ## transactions
 - GET    /transactions✔
 - POST   /transactions

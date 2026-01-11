@@ -2,7 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import transactionRoutes from "./routes/transactions.routes";
 import physiciansRoutes from "./routes/physicians.routes";
-import userRoutes from "./routes/userRoutes";
+import userRoutes from "./routes/user.routes";
 import healthRoutes from "./routes/health.routes";
 import authRoutes from "./routes/auth.routes";
 
