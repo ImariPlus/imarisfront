@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
 export interface AuthRequest extends Request {
-  user?: { id: string; role: string };
+  user?: { id: string; role: "ADMIN" | "FINANCE" | "USER" };
 }
 
 export const auth = (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -18,7 +18,7 @@ export const auth = (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const decoded = jwt.verify(token, secret) as {
       id: string;
-      role: string;
+      role: "ADMIN" | "FINANCE" | "USER";
     };
 
     req.user = decoded;

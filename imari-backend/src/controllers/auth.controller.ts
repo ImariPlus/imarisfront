@@ -1,12 +1,10 @@
 import { Request, Response, NextFunction } from "express";
+import { AuthRequest, Role } from "../types/auth";
 import { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
 import { comparePassword } from "../utils/hash";
 
 const prisma = new PrismaClient();
-export interface AuthRequest extends Request {
-  user?: { id: string; role: string };
-}
 
 export const auth = (req: AuthRequest, res: Response, next: NextFunction) => {
   const header = req.headers.authorization;
@@ -21,7 +19,7 @@ export const auth = (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const decoded = jwt.verify(token, secret) as {
       id: string;
-      role: string;
+      role: Role;
     };
 
     req.user = decoded;
