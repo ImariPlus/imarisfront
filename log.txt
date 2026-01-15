@@ -39,10 +39,10 @@ also just finished doing (07/01/26) the Users API, there are still thing missing
 - GET /physicians/:id/payroll-review
 ## transactions
 - GET    /transactions✔
-- POST   /transactions
-- GET    /transactions/:id
-- PUT    /transactions/:id
-- DELETE /transactions/:id
+- POST   /transactions✔
+- GET    /transactions/:id✔
+- PUT    /transactions/:id✔
+- DELETE /transactions/:id✔
 ### Filters
 - GET /transactions?date=2026-01-01
 - GET /transactions?physicianId=123
@@ -54,15 +54,15 @@ also just finished doing (07/01/26) the Users API, there are still thing missing
 - GET /timeline/today
 - GET /timeline?date=2026-01-01
 ## Payroll
-- GET /payroll
-- GET /payroll/:physicianId
-- POST /payroll/generate
-- POST /payroll/pay
+- GET /payroll✔
+- GET /payroll/:physicianId✔
+- POST /payroll/generate✔
+- POST /payroll/pay✔
 ## expenses
-- GET    /expenses
-- POST   /expenses
-- PUT    /expenses/:id
-- DELETE /expenses/:id
+- GET    /expenses✔
+- POST   /expenses✔
+- PUT    /expenses/:id✔
+- DELETE /expenses/:id✔
 ## settings
 - GET /settings
 - PUT /settings

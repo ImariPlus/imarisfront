@@ -17,9 +17,10 @@ model User {
   updatedAt DateTime @default(now())
 
   transactions     Transaction[]
-  payrolls         Payroll[]
+  staffPayrolls    StaffPayroll[]
   timelineEntries  TimelineEntry[]
-  recordedExpenses Expense[]
+  recordedExpenses Expense[]       @relation("RecordedExpenses")
+  advances         Expense[]       @relation("StaffAdvances")
 }
 
 enum UserRole {
@@ -77,19 +78,32 @@ enum TimelineType {
   NOTE
 }
 
-model Payroll {
-  id         String @id @default(cuid())
-  month      String
-  staffName  String
-  baseSalary Float
-  bonus      Float? @default(0)
-  deductions Float? @default(0)
-  netPay     Float
+model StaffPayroll {
+  id      String @id @default(cuid())
+  staffId String
+  staff   User   @relation(fields: [staffId], references: [id])
 
-  processedById String
-  processedBy   User   @relation(fields: [processedById], references: [id])
+  month Int
+  year  Int
+
+  grossPay        Float
+  advancesTaken   Float @default(0)
+  savedAmount     Float @default(0)
+  remainingAmount Float @default(0)
+  netPayable      Float @default(0)
+
+  status PayrollStatus @default(PENDING)
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([staffId, month, year])
+}
+
+enum PayrollStatus {
+  PENDING
+  CLOSED
+  PAID
 }
 
 model Expense {
@@ -100,8 +114,11 @@ model Expense {
   notes     String?
   createdAt DateTime        @default(now())
 
+  staffId String?
+  staff   User?   @relation("StaffAdvances", fields: [staffId], references: [id])
+
   recordedById String
-  recordedBy   User   @relation(fields: [recordedById], references: [id])
+  recordedBy   User   @relation("RecordedExpenses", fields: [recordedById], references: [id])
 }
 
 enum ExpenseCategory {
@@ -109,5 +126,19 @@ enum ExpenseCategory {
   UTILITIES
   RENT
   SALARY
+  ADVANCE
   OTHER
+}
+
+model PayrollAccrual {
+  id        String @id @default(cuid())
+  month     String
+  staffName String
+
+  expectedPay Float
+  savedSoFar  Float @default(0)
+  paidSoFar   Float @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

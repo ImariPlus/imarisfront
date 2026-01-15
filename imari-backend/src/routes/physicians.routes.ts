@@ -1,7 +1,7 @@
 import { Router } from "express";
 import * as controller from "../controllers/physicians.controller";
 import { auth } from "../middlewares/auth.middleware";
-import { isAdmin } from "../middlewares/admin.middleware";
+import { isAdmin } from "../middlewares/role.middleware";
 
 const router = Router();
 
