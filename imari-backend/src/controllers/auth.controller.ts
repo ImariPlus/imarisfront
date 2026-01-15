@@ -22,7 +22,7 @@ export const auth = (req: AuthRequest, res: Response, next: NextFunction) => {
       role: Role;
     };
 
-    req.user = decoded;
+    req.user = decoded as any;
     next();
   } catch {
     return res.status(401).json({ message: "Invalid token" });
