@@ -53,7 +53,9 @@
 }
 
 .container-left {
-  background-color: #f5f5f5;
+  background-color: #140d0d;
+  display: flex;
+  flex-direction: column;
 }
 
 .container-right {

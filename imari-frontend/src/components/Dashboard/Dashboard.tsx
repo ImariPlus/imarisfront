@@ -31,7 +31,7 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const res = await api.get("/dashboard/summary");
+        const res = await api.get("api/dashboard");
         setData(res.data ?? {});
       } catch (err) {
         console.error(err);
