@@ -28,7 +28,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="app-layout">
+    <div className="app-layout container-all">
       <Sidebar active={active} setActive={setActive} />
       <main className="content-area">{renderContent()}</main>
     </div>

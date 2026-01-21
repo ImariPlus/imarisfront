@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "../Styles/DailyTimeline.css";
+import "../styles/DailyTimeline.css";
 
 interface TimelineEntry {
   time: string;
