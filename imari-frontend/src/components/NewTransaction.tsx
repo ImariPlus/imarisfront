@@ -10,10 +10,15 @@ interface TransactionFormData {
   notes: string;
 }
 
+interface Physician {
+  id: string;
+  name: string;
+}
+
 const API_BASE = import.meta.env.VITE_API_URL;
 
 const NewTransaction: React.FC = () => {
-  const [physicians, setPhysicians] = useState<string[]>([]);
+  const [physicians, setPhysicians] = useState<Physician[]>([]);
   const [loadingPhysicians, setLoadingPhysicians] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,9 +36,12 @@ const NewTransaction: React.FC = () => {
      FETCH PHYSICIANS (AUTH)
   ========================= */
   useEffect(() => {
+    console.log("API BASE =", API_BASE);
+
     const fetchPhysicians = async () => {
       try {
         const token = localStorage.getItem("token");
+        if (!token) throw new Error("No auth token found");
 
         const response = await fetch(`${API_BASE}/api/physicians`, {
           headers: {
@@ -48,7 +56,7 @@ const NewTransaction: React.FC = () => {
         }
 
         const data = await response.json();
-        setPhysicians(data.data ?? data);
+        setPhysicians(data.data ?? data); // backend might wrap in { data: [...] }
       } catch (err) {
         console.error("Error fetching physicians:", err);
         setError("Failed to load physicians");
@@ -72,8 +80,7 @@ const NewTransaction: React.FC = () => {
 
     setFormData((prev) => ({
       ...prev,
-      [name]:
-        name === "amount" || name === "discount" ? Number(value) : value,
+      [name]: name === "amount" || name === "discount" ? Number(value) : value,
     }));
   };
 
@@ -84,6 +91,7 @@ const NewTransaction: React.FC = () => {
 
     try {
       const token = localStorage.getItem("token");
+      if (!token) throw new Error("No auth token found");
 
       const response = await fetch(`${API_BASE}/api/transactions`, {
         method: "POST",
@@ -99,7 +107,7 @@ const NewTransaction: React.FC = () => {
         throw new Error(text);
       }
 
-      // reset form on success
+      // Reset form on success
       setFormData({
         clientName: "",
         physician: "",
@@ -154,9 +162,9 @@ const NewTransaction: React.FC = () => {
               <option value="">
                 {loadingPhysicians ? "Loading..." : "Select"}
               </option>
-              {physicians.map((physician) => (
-                <option key={physician} value={physician}>
-                  {physician}
+              {physicians.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
                 </option>
               ))}
             </select>
@@ -174,7 +182,7 @@ const NewTransaction: React.FC = () => {
             />
           </div>
 
-          {/* Payment */}
+          {/* Payment Method */}
           <div className="form-group">
             <label>Payment Method</label>
             <select

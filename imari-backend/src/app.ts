@@ -12,9 +12,19 @@ import payrollRoutes from "./routes/payroll.routes";
 import dashboardRoutes from "./routes/dashboard.routes";
 
 const app = express();
+const corsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    if (!origin) return callback(null, true);
+    if (origin.includes("app.github.dev")) {
+      return callback(null, true);
+    }
+    callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+};
 
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use("/api/health", healthRoutes);
 

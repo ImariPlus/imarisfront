@@ -1,52 +1,56 @@
 import React from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 import "../styles/sidebar.css";
+
+interface JwtPayload {
+  id: string;
+  name?: string;
+  role?: string;
+  exp?: number;
+  iat?: number;
+}
 
 const Sidebar: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
+  const token = localStorage.getItem("token");
+
+  // If no token, don't render the sidebar
+  if (!token) return null;
+
+  let userName: string | undefined = undefined;
+  try {
+    const decoded = jwtDecode<JwtPayload>(token);
+    userName = decoded.name;
+  } catch (err) {
+    console.error("Invalid token:", err);
+    return null; // don't render sidebar if token invalid
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login", { replace: true });
+  };
 
   return (
-    <nav className="sidebar">
-      <h1 className="logo">Imari+</h1>
-      <div className="sidebar-nav">
-
-        <button
-          className={location.pathname === "/dashboard" ? "active" : ""}
-          onClick={() => navigate("/dashboard")}
-        >
-          Dashboard
-        </button>
-
-        <button
-          className={location.pathname === "/transactions" ? "active" : ""}
-          onClick={() => navigate("/transactions")}
-        >
-          New Transaction
-        </button>
-
-        <button
-          className={location.pathname === "/timeline" ? "active" : ""}
-          onClick={() => navigate("/timeline")}
-        >
-          Daily Timeline
-        </button>
-
-        <button
-          className={location.pathname === "/payroll" ? "active" : ""}
-          onClick={() => navigate("/payroll")}
-        >
-          Payroll
-        </button>
-
-        <button
-          className={location.pathname === "/expenses" ? "active" : ""}
-          onClick={() => navigate("/expenses")}
-        >
-          Expense Tracker
-        </button>
+    <aside className="sidebar">
+      <div className="sidebar-header">
+        <h1 className="logo">Imari+</h1>
+        {userName && <p className="welcome-text">Welcome, {userName}</p>}
       </div>
-    </nav>
+
+      <nav className="sidebar-nav">
+        <NavLink to="/dashboard">Dashboard</NavLink>
+        <NavLink to="/transactions">New Transaction</NavLink>
+        <NavLink to="/timeline">Daily Timeline</NavLink>
+        <NavLink to="/payroll">Payroll</NavLink>
+        <NavLink to="/expenses">Expense Tracker</NavLink>
+      </nav>
+
+      <button onClick={handleLogout} className="logout-btn">
+        Logout
+      </button>
+    </aside>
   );
 };
 

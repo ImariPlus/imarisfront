@@ -6,6 +6,8 @@ import NewTransaction from "./components/NewTransaction";
 import DailyTimeline from "./components/DailyTimeline";
 import PayrollModule from "./components/PayrollModule/PayrollModule";
 import ExpenseTracker from "./components/ExpenseTracker";
+import Login from "./components/Login";
+import ProtectedRoute from "./components/ProtectedRoute";
 import "./App.css";
 
 const App: React.FC = () => {
@@ -16,12 +18,51 @@ const App: React.FC = () => {
 
         <main className="content-area">
           <Routes>
+            <Route path="/login" element={<Login />} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/transactions" element={<NewTransaction />} />
-            <Route path="/timeline" element={<DailyTimeline />} />
-            <Route path="/payroll" element={<PayrollModule />} />
-            <Route path="/expenses" element={<ExpenseTracker />} />
+
+            {/* Protected Routes */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/transactions"
+              element={
+                <ProtectedRoute>
+                  <NewTransaction />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/timeline"
+              element={
+                <ProtectedRoute>
+                  <DailyTimeline />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/payroll"
+              element={
+                <ProtectedRoute>
+                  <PayrollModule />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/expenses"
+              element={
+                <ProtectedRoute>
+                  <ExpenseTracker />
+                </ProtectedRoute>
+              }
+            />
+
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </main>

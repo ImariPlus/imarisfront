@@ -1,3 +1,15 @@
+🔊🔊🔊 REMEMBER TO CHECK WHETHER ALL ENV FILES ARE THERE WHEN STARTING IN A NEW CODESPACE, IF NOT:
+regenerate prisma db, reset the password, reset JWT secret and then re-migrate prisma stuff in this order
+{
+    - create .ENV
+    - add ADMIN_PASSWORD, JWT_SECRET, DATABASE_URL="file:./dev.db"
+    - run export $(cat .env | xargs) and then echo $every-const-above
+    - npx prisma migrate reset
+    - npm run dev
+}
+
+
+
 1. more on the dashboard
     - icons
     - collapsible sidebar
