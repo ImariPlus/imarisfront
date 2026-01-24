@@ -11,23 +11,17 @@ import "./App.css";
 const App: React.FC = () => {
   return (
     <BrowserRouter>
-      <div className="app-layout container-all">
-        <Sidebar active={""} setActive={(value: string) => {
-          // Handle sidebar navigation here
-        }} />
+      <div className="app-layout">
+        <Sidebar />
+
         <main className="content-area">
           <Routes>
-            {/* Default landing */}
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
-
-            {/* Pages */}
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/transactions" element={<NewTransaction />} />
             <Route path="/timeline" element={<DailyTimeline />} />
             <Route path="/payroll" element={<PayrollModule />} />
             <Route path="/expenses" element={<ExpenseTracker />} />
-
-            {/* Fallback */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </main>

@@ -1,0 +1,6 @@
+1. more on the dashboard
+    - icons
+    - collapsible sidebar
+    - backend summary cards auto-koading on dashboard
+    - wiring the dashboard backend route
+    - animations

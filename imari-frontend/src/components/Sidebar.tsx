@@ -1,20 +1,52 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
-// import "../styles/Sidebar.css";
+import { useNavigate, useLocation } from "react-router-dom";
+import "../styles/sidebar.css";
 
 const Sidebar: React.FC = () => {
-  return (
-    <aside className="sidebar container-left">
-      <h1 className="logo">Imari+</h1>
+  const navigate = useNavigate();
+  const location = useLocation();
 
-      <nav className="sidebar-nav">
-        <NavLink to="/dashboard">Dashboard</NavLink>
-        <NavLink to="/transactions">New Transaction</NavLink>
-        <NavLink to="/timeline">Daily Timeline</NavLink>
-        <NavLink to="/payroll">Payroll</NavLink>
-        <NavLink to="/expenses">Expense Tracker</NavLink>
-      </nav>
-    </aside>
+  return (
+    <nav className="sidebar">
+      <h1 className="logo">Imari+</h1>
+      <div className="sidebar-nav">
+
+        <button
+          className={location.pathname === "/dashboard" ? "active" : ""}
+          onClick={() => navigate("/dashboard")}
+        >
+          Dashboard
+        </button>
+
+        <button
+          className={location.pathname === "/transactions" ? "active" : ""}
+          onClick={() => navigate("/transactions")}
+        >
+          New Transaction
+        </button>
+
+        <button
+          className={location.pathname === "/timeline" ? "active" : ""}
+          onClick={() => navigate("/timeline")}
+        >
+          Daily Timeline
+        </button>
+
+        <button
+          className={location.pathname === "/payroll" ? "active" : ""}
+          onClick={() => navigate("/payroll")}
+        >
+          Payroll
+        </button>
+
+        <button
+          className={location.pathname === "/expenses" ? "active" : ""}
+          onClick={() => navigate("/expenses")}
+        >
+          Expense Tracker
+        </button>
+      </div>
+    </nav>
   );
 };
 
