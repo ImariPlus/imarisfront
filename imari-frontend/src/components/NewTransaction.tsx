@@ -10,9 +10,13 @@ interface TransactionFormData {
   notes: string;
 }
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 const NewTransaction: React.FC = () => {
   const [physicians, setPhysicians] = useState<string[]>([]);
   const [loadingPhysicians, setLoadingPhysicians] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<TransactionFormData>({
     clientName: "",
@@ -23,22 +27,42 @@ const NewTransaction: React.FC = () => {
     notes: "",
   });
 
-  // fetch physicians from backend
+  /* =========================
+     FETCH PHYSICIANS (AUTH)
+  ========================= */
   useEffect(() => {
     const fetchPhysicians = async () => {
       try {
-        const response = await fetch("API_BASE/api/physicians");
+        const token = localStorage.getItem("token");
+
+        const response = await fetch(`${API_BASE}/api/physicians`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(text);
+        }
+
         const data = await response.json();
-        setPhysicians(data.data);
-      } catch (error) {
-        console.error("Error fetching physicians:", error);
+        setPhysicians(data.data ?? data);
+      } catch (err) {
+        console.error("Error fetching physicians:", err);
+        setError("Failed to load physicians");
       } finally {
         setLoadingPhysicians(false);
       }
     };
+
     fetchPhysicians();
   }, []);
 
+  /* =========================
+     FORM HANDLERS
+  ========================= */
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -53,15 +77,56 @@ const NewTransaction: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Submitting transaction:", formData);
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${API_BASE}/api/transactions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text);
+      }
+
+      // reset form on success
+      setFormData({
+        clientName: "",
+        physician: "",
+        amount: 0,
+        paymentMethod: "",
+        discount: 0,
+        notes: "",
+      });
+
+      console.log("Transaction saved successfully");
+    } catch (err) {
+      console.error("Failed to save transaction:", err);
+      setError("Failed to save transaction");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
+  /* =========================
+     RENDER
+  ========================= */
   return (
     <div className="transaction-container">
       <div className="transaction-form">
         <h2>Enter Transaction</h2>
+
+        {error && <p className="error">{error}</p>}
 
         <form onSubmit={handleSubmit}>
           {/* Client */}
@@ -147,8 +212,8 @@ const NewTransaction: React.FC = () => {
             />
           </div>
 
-          <button type="submit" className="submit-btn">
-            Save
+          <button type="submit" className="submit-btn" disabled={submitting}>
+            {submitting ? "Saving..." : "Save"}
           </button>
         </form>
       </div>
