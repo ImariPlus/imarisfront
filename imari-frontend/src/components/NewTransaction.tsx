@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import "../styles/Transaction.css";
 
 interface TransactionFormData {
   clientName: string;
@@ -26,7 +27,7 @@ const NewTransaction: React.FC = () => {
   useEffect(() => {
     const fetchPhysicians = async () => {
       try {
-        const response = await fetch("");
+        const response = await fetch("API_BASE/api/physicians");
         const data = await response.json();
         setPhysicians(data.data);
       } catch (error) {

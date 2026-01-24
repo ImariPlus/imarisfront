@@ -17,6 +17,6 @@
 .content-area {
   flex: 1;
   height: 100vh;
-  overflow: hidden;
+  /* overflow: hidden; */
   /* background-color: #f8fafc; */
 }
