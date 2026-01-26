@@ -1,12 +1,15 @@
-import { Response } from "express";
-import { AuthRequest } from "../middlewares/auth.middleware";
+import { Request, Response } from "express";
 import { PrismaClient, PayrollStatus } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export const getDashboardSnapshot = async (req: AuthRequest, res: Response) => {
+export const getDashboardSnapshot = async (req: Request, res: Response) => {
   try {
-    const role = req.user?.role;
+    const role = req.auth?.role;
+
+    if (!role) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
 
     const today = new Date();
     const startOfDay = new Date(today.setHours(0, 0, 0, 0));
@@ -63,19 +66,20 @@ export const getDashboardSnapshot = async (req: AuthRequest, res: Response) => {
     let totalRemainingPayroll = 0;
 
     const payrollsWithExtras = payrolls.map((p) => {
-      let savedField = p.savedAmount;
       let locked = false;
 
-      if (p.status === PayrollStatus.PAID || p.status === PayrollStatus.CLOSED) {
-        savedField = p.savedAmount; // money saved this month
-        locked = true; // mark as non-editable
+      if (
+        p.status === PayrollStatus.PAID ||
+        p.status === PayrollStatus.CLOSED
+      ) {
+        locked = true;
       } else {
         totalRemainingPayroll += p.remainingAmount;
       }
 
       return {
         ...p,
-        moneySavedThisMonth: savedField,
+        moneySavedThisMonth: p.savedAmount,
         locked,
       };
     });

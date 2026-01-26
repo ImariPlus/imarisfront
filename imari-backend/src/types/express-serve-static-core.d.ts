@@ -1,8 +1,8 @@
-import { User } from "@prisma/client";
+import { JwtUser } from "../middlewares/auth.middleware"
 
 declare module "express-serve-static-core" {
         interface Request {
-            user?: User;
+            auth?: JwtUser;
         }
 }
 

@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser"; // <-- needed for reading cookies
 import cron from "node-cron";
 import { resetMonthlyPayrolls } from "./utils/payroll.reset";
 import transactionRoutes from "./routes/transactions.routes";
@@ -12,34 +13,33 @@ import payrollRoutes from "./routes/payroll.routes";
 import dashboardRoutes from "./routes/dashboard.routes";
 
 const app = express();
-const corsOptions = {
-  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    if (!origin) return callback(null, true);
-    if (origin.includes("app.github.dev")) {
-      return callback(null, true);
-    }
-    callback(new Error("Not allowed by CORS"));
-  },
-  credentials: true,
-};
 
-// Middleware
-app.use(cors(corsOptions));
+// ---- CORS Setup ----
+const allowedOrigins = [
+  "https://reimagined-invention-wr57pg975gpjcgq57-5173.app.github.dev",
+  "http://localhost:5173", // local dev
+];
+
+app.use(cors({
+  origin: true,
+})
+);
 app.use(express.json());
-app.use("/api/health", healthRoutes);
+app.use(cookieParser()); // <-- enables reading cookies
 
-// Simple request logger
+// ---- Request Logger ----
 app.use((req: Request, _res: Response, next: NextFunction) => {
   console.log(`${req.method} ${req.path}`);
   next();
 });
 
-// Health check
+// ---- Health Check ----
 app.get("/", (_req: Request, res: Response) => {
   res.send("Imari+ backend is running");
 });
 
-// API Routes
+// ---- API Routes ----
+app.use("/api/health", healthRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/physicians", physiciansRoutes);
 app.use("/api/users", userRoutes);
@@ -48,7 +48,7 @@ app.use("/api/expenses", expenseRoutes);
 app.use("/api/payroll", payrollRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 
-
+// ---- Cron Job ----
 cron.schedule("0 0 1 * *", async () => {
   try {
     console.log("Resetting monthly payrolls...");
@@ -59,12 +59,12 @@ cron.schedule("0 0 1 * *", async () => {
   }
 });
 
-// 404 handler
+// ---- 404 Handler ----
 app.use((_req: Request, res: Response) => {
   res.status(404).json({ message: "Route not found" });
 });
 
-// General error handler
+// ---- General Error Handler ----
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err);
   res.status(500).json({ message: "Internal Server Error" });

@@ -1,29 +1,24 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
-export interface AuthRequest extends Request {
-  user?: { id: string; role: "ADMIN" | "FINANCE" | "USER" };
-}
+export interface JwtUser {
+  id: string;
+    role: "ADMIN" | "FINANCE" | "USER";
+    }
 
-export const auth = (req: AuthRequest, res: Response, next: NextFunction) => {
-  const header = req.headers.authorization;
+    export const auth = (req: Request, res: Response, next: NextFunction) => {
+      const header = req.headers.authorization;
 
-  if (!header || !header.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "No token provided" });
-  }
+        if (!header?.startsWith("Bearer ")) {
+            return res.status(401).json({ message: "No token provided" });
+              }
 
-  const token = header.split(" ")[1];
-  const secret = process.env.JWT_SECRET as string;
-
-  try {
-    const decoded = jwt.verify(token, secret) as {
-      id: string;
-      role: "ADMIN" | "FINANCE" | "USER";
-    };
-
-    req.user = decoded;
-    next();
-  } catch {
-    return res.status(401).json({ message: "Invalid token" });
-  }
-};
+                try {
+                    const token = header.split(" ")[1];
+                        req.auth = jwt.verify(token, process.env.JWT_SECRET!) as JwtUser;
+                            next();
+                              } catch {
+                                  return res.status(401).json({ message: "Invalid token" });
+                                    }
+                                    };
+                                    
