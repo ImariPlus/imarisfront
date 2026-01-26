@@ -1,10 +1,9 @@
-import { Response, NextFunction } from "express";
-import { AuthRequest, Role } from "../types/auth";
+import { Request, Response, NextFunction } from "express";
 
 export const allowRoles =
-  (...roles: Role[]) =>
-  (req: AuthRequest, res: Response, next: NextFunction) => {
-    if (!req.user || !roles.includes(req.user.role)) {
+  (...roles: Array<"ADMIN" | "FINANCE" | "USER">) =>
+  (req: Request, res: Response, next: NextFunction) => {
+    if (!req.auth || !roles.includes(req.auth.role)) {
       return res.status(403).json({ message: "Forbidden" });
     }
     next();

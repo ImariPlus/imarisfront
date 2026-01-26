@@ -3,12 +3,12 @@ import api from "../../api";
 import { formatMoney } from "../../utils/format";
 import "../../styles/Dashboard.css";
 
-interface TimelineEntry {
+interface Transaction {
   id: string;
-  description: string;
-  type: string;
+  clientName: string;
+  amount: number;
   createdAt: string;
-  user?: { name: string };
+  physician?: { name: string };
 }
 
 interface DashboardData {
@@ -16,10 +16,10 @@ interface DashboardData {
     totalExpected?: number;
     netEarnedToday?: number;
   };
+  recentTransactions?: Transaction[];
   finance?: {
     expensesToday?: number;
     totalRemainingPayroll?: number;
-    recentTimeline?: TimelineEntry[];
   };
 }
 
@@ -31,7 +31,7 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const res = await api.get("api/dashboard");
+        const res = await api.get("/api/dashboard"); // ✅ FIXED
         setData(res.data ?? {});
       } catch (err) {
         console.error(err);
@@ -54,6 +54,7 @@ const Dashboard: React.FC = () => {
 
   const today = data?.today ?? {};
   const finance = data?.finance ?? {};
+  const recent = data?.recentTransactions ?? [];
 
   return (
     <div className="dashboard-container">
@@ -82,30 +83,27 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* RECENT ACTIVITY */}
+      {/* RECENT TRANSACTIONS */}
       <div className="dashboard-section">
-        <h2>Recent Activity</h2>
+        <h2>Recent Transactions</h2>
 
-        {finance.recentTimeline?.length ? (
+        {recent.length ? (
           <ul className="timeline-preview">
-            {finance.recentTimeline.slice(0, 5).map((entry) => (
-              <li key={entry.id}>
-                <span className={`badge ${entry.type.toLowerCase()}`}>
-                  {entry.type}
+            {recent.slice(0, 5).map((t) => (
+              <li key={t.id}>
+                <span className="badge transaction">Transaction</span>
+                <span>
+                  {t.clientName} · {formatMoney(t.amount)}
                 </span>
-                <span>{entry.description}</span>
                 <small>
-                  {entry.user?.name ?? "System"} ·{" "}
-                  {new Date(entry.createdAt).toLocaleTimeString()}
+                  {new Date(t.createdAt).toLocaleTimeString()}
                 </small>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="muted">No recent activity</p>
+          <p className="muted">No recent transactions</p>
         )}
-
-        <button className="link-button">View full timeline →</button>
       </div>
     </div>
   );

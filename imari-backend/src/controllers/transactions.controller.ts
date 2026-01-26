@@ -1,15 +1,23 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { AuthRequest } from "../middlewares/auth.middleware";
 
 const prisma = new PrismaClient();
 
+// Type for our auth object on the request
+interface JwtAuth {
+  id: string;
+  role: "ADMIN" | "FINANCE" | "USER";
+}
+
 // GET /transactions
-export const getTransactions = async (req: AuthRequest, res: Response) => {
+export const getTransactions = async (req: Request & { auth?: JwtAuth }, res: Response) => {
   try {
     const transactions = await prisma.transaction.findMany({
       orderBy: { createdAt: "desc" },
-      include: { physician: true, createdBy: { select: { id: true, name: true, email: true } } },
+      include: { 
+        physician: true, 
+        createdBy: { select: { id: true, name: true, email: true } } 
+      },
     });
     res.json(transactions);
   } catch (error) {
@@ -19,12 +27,15 @@ export const getTransactions = async (req: AuthRequest, res: Response) => {
 };
 
 // GET /transactions/:id
-export const getTransaction = async (req: AuthRequest, res: Response) => {
+export const getTransaction = async (req: Request & { auth?: JwtAuth }, res: Response) => {
   try {
     const { id } = req.params;
     const transaction = await prisma.transaction.findUnique({
       where: { id },
-      include: { physician: true, createdBy: { select: { id: true, name: true, email: true } } },
+      include: { 
+        physician: true, 
+        createdBy: { select: { id: true, name: true, email: true } } 
+      },
     });
     if (!transaction) return res.status(404).json({ message: "Transaction not found" });
     res.json(transaction);
@@ -35,10 +46,11 @@ export const getTransaction = async (req: AuthRequest, res: Response) => {
 };
 
 // POST /transactions
-export const createTransaction = async (req: AuthRequest, res: Response) => {
+export const createTransaction = async (req: Request & { auth?: JwtAuth }, res: Response) => {
   try {
     const { clientName, amount, paymentMethod, physicianId, notes } = req.body;
 
+    // req.auth!.id is safe because auth middleware runs before this
     const transaction = await prisma.transaction.create({
       data: {
         clientName,
@@ -46,7 +58,7 @@ export const createTransaction = async (req: AuthRequest, res: Response) => {
         paymentMethod,
         physicianId,
         notes,
-        createdById: req.user!.id,
+        createdById: req.auth!.id,
       },
     });
 
@@ -58,7 +70,7 @@ export const createTransaction = async (req: AuthRequest, res: Response) => {
 };
 
 // PUT /transactions/:id
-export const updateTransaction = async (req: AuthRequest, res: Response) => {
+export const updateTransaction = async (req: Request & { auth?: JwtAuth }, res: Response) => {
   try {
     const { id } = req.params;
     const { clientName, amount, paymentMethod, notes } = req.body;
@@ -76,7 +88,7 @@ export const updateTransaction = async (req: AuthRequest, res: Response) => {
 };
 
 // DELETE /transactions/:id
-export const deleteTransaction = async (req: AuthRequest, res: Response) => {
+export const deleteTransaction = async (req: Request & { auth?: JwtAuth }, res: Response) => {
   try {
     const { id } = req.params;
 

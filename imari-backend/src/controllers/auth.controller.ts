@@ -1,34 +1,35 @@
 import { Request, Response, NextFunction } from "express";
-import { AuthRequest, Role } from "../types/auth";
 import { PrismaClient } from "@prisma/client";
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
 import { comparePassword } from "../utils/hash";
+import { Role } from "../types/auth";
 
 const prisma = new PrismaClient();
 
-export const auth = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const auth = (req: Request, res: Response, next: NextFunction) => {
   const header = req.headers.authorization;
 
   if (!header || !header.startsWith("Bearer ")) {
     return res.status(401).json({ message: "No token provided" });
   }
 
-  const token = header.split(" ")[1];
-  const secret = process.env.JWT_SECRET as string;
+  const [, token] = header.split(" ");
+  if (!token) {
+    return res.status(401).json({ message: "Invalid authorization header" });
+  }
 
   try {
-    const decoded = jwt.verify(token, secret) as {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
       id: string;
       role: Role;
     };
 
-    req.user = decoded as any;
+    req.auth = decoded;
     next();
   } catch {
     return res.status(401).json({ message: "Invalid token" });
   }
 };
-
 
 export const login = async (req: Request, res: Response) => {
   try {
@@ -48,15 +49,12 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const secret = process.env.JWT_SECRET;
-    if (!secret) {
-      return res.status(500).json({ message: "JWT secret not configured" });
-    }
+    const options: SignOptions = { expiresIn: "7d" };
 
     const token = jwt.sign(
       { id: user.id, role: user.role },
-      secret,
-      { expiresIn: "7d" } as any   // force TS to stop whining
+      process.env.JWT_SECRET!,
+      options
     );
 
     return res.json({
