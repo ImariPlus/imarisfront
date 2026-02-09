@@ -1,0 +1,17 @@
+import { Router } from "express";
+import * as transactionsController from "../controllers/transactions.controller";
+import { authenticate } from "../middlewares/auth.middleware";
+import { isAdmin } from "../middlewares/role.middleware";
+
+const router = Router();
+
+// Auth required for all transaction routes
+router.use(authenticate);
+
+router.get("/", transactionsController.getTransactions);
+router.get("/:id", transactionsController.getTransaction);
+router.post("/", transactionsController.createTransaction);
+router.put("/:id", isAdmin, transactionsController.updateTransaction);
+router.delete("/:id", isAdmin, transactionsController.deleteTransaction);
+
+export default router;
