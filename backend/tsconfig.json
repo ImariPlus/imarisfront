@@ -9,5 +9,5 @@
     "moduleResolution": "node",
   },
   "exclude": ["dist"],
-  "include": ["src", "prisma/seed", "src/types"]
+  "include": ["src", "prisma/seed", "src/**/*.d.ts", "src/**/*.ts"]
 }

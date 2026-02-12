@@ -1,13 +1,9 @@
-import { UserRole } from "@prisma/client";
+import { JwtUser } from "../middlewares/auth.middleware";
+import "express";
 
-declare global {
-  namespace Express {
-    interface Request {
-      auth?: {
-        id: string;
-        role: UserRole;
-      };
-    }
+declare module "express-serve-static-core" {
+  interface Request {
+    auth?: any;
   }
 }
 
