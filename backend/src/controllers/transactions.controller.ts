@@ -57,6 +57,7 @@ export const createTransaction = async (req: Request & { auth?: JwtAuth }, res: 
         amount,
         paymentMethod,
         physicianId,
+        discount: req.body.discount || 0,
         notes,
         createdById: req.auth!.id,
       },

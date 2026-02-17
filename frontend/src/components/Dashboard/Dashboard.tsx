@@ -36,7 +36,7 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const res = await api.get("/api/dashboard"); // ✅ FIXED
+        const res = await api.get("/api/dashboard");
         setData(res.data ?? {});
       } catch (err) {
         console.error(err);
@@ -49,17 +49,29 @@ const Dashboard: React.FC = () => {
     fetchDashboard();
   }, []);
 
-  if (loading) {
-    return <DashboardSkeleton />;
-  }
+  if (loading) return <DashboardSkeleton />;
+  if (error) return <div className="dashboard-container error">{error}</div>;
 
-  if (error) {
-    return <div className="dashboard-container error">{error}</div>;
-  }
-
-  const today = data?.today ?? {};
+  const todayStats = data?.today ?? {};
   const finance = data?.finance ?? {};
   const recent = data?.recentTransactions ?? [];
+
+  // ===== GROUPING LOGIC =====
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const startOfYesterday = new Date(startOfToday);
+  startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+
+  const todaysTransactions = recent.filter((t) => {
+    const date = new Date(t.createdAt);
+    return date >= startOfToday;
+  });
+
+  const yesterdaysTransactions = recent.filter((t) => {
+    const date = new Date(t.createdAt);
+    return date >= startOfYesterday && date < startOfToday;
+  });
 
   return (
     <div className="dashboard-container">
@@ -69,12 +81,12 @@ const Dashboard: React.FC = () => {
       <div className="dashboard-grid">
         <div className="dashboard-card">
           <h3>Total Expected</h3>
-          <p>{formatMoney(today.totalExpected ?? 0)}</p>
+          <p>{formatMoney(todayStats.totalExpected ?? 0)}</p>
         </div>
 
         <div className="dashboard-card">
           <h3>Net Earned Today</h3>
-          <p>{formatMoney(today.netEarnedToday ?? 0)}</p>
+          <p>{formatMoney(todayStats.netEarnedToday ?? 0)}</p>
         </div>
 
         <div className="dashboard-card">
@@ -92,22 +104,48 @@ const Dashboard: React.FC = () => {
       <div className="dashboard-section">
         <h2>Recent Transactions</h2>
 
-        {recent.length ? (
-          <ul className="timeline-preview">
-            {recent.slice(0, 5).map((t) => (
-              <li key={t.id}>
-                <span className="badge transaction">Transaction</span>
-                <span>
-                  {t.clientName} · {formatMoney(t.amount)}
-                </span>
-                <small>
-                  {new Date(t.createdAt).toLocaleTimeString()}
-                </small>
-              </li>
-            ))}
-          </ul>
-        ) : (
+        {!recent.length && (
           <p className="muted">No recent transactions</p>
+        )}
+
+        {/* TODAY */}
+        {todaysTransactions.length > 0 && (
+          <>
+            <h3 className="section-heading">Today</h3>
+            <ul className="timeline-preview">
+              {todaysTransactions.map((t) => (
+                <li key={t.id}>
+                  <span className="badge transaction">Transaction</span>
+                  <span>{t.clientName}</span>
+                  <span>{formatMoney(t.amount)}</span>
+                  <span>{t.physician?.name ?? "—"}</span>
+                  <small>
+                    {new Date(t.createdAt).toLocaleTimeString()}
+                  </small>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+
+        {/* YESTERDAY */}
+        {yesterdaysTransactions.length > 0 && (
+          <>
+            <h3 className="section-heading">Yesterday</h3>
+            <ul className="timeline-preview">
+              {yesterdaysTransactions.map((t) => (
+                <li key={t.id}>
+                  <span className="badge transaction">Transaction</span>
+                  <span>{t.clientName}</span>
+                  <span>{formatMoney(t.amount)}</span>
+                  <span>{t.physician?.name ?? "—"}</span>
+                  <small>
+                    {new Date(t.createdAt).toLocaleTimeString()}
+                  </small>
+                </li>
+              ))}
+            </ul>
+          </>
         )}
       </div>
     </div>

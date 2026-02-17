@@ -1,55 +1,50 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import api from "../api";
 import "../styles/DailyTimeline.css";
 
 interface TimelineEntry {
-  time: string;
-  task: string;
-  completed: boolean;
+  id: string;
+  description: string;
+  type: "TRANSACTION" | "EXPENSE" | "PAYROLL" | "NOTE";
+  createdAt: string;
+  user: { id: string; name: string };
 }
 
-const DailyTimeline: React.FC = () => {
+interface DailyTimelineProps {
+  date?: string;
+}
+
+const DailyTimeline: React.FC<DailyTimelineProps> = ({ date }) => {
   const [entries, setEntries] = useState<TimelineEntry[]>([]);
-  const [newTask, setNewTask] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const handleAddTask = () => {
-    if (newTask.trim() === "") return;
-    setEntries((prev) => [
-      ...prev,
-      { time: new Date().toLocaleTimeString(), task: newTask, completed: false },
-    ]);
-    setNewTask("");
-  };
+  useEffect(() => {
+    const fetchTimeline = async () => {
+      try {
+        const res = await api.get("/api/timeline", { params: { date } });
+        setEntries(res.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const toggleComplete = (index: number) => {
-    setEntries((prev) =>
-      prev.map((entry, i) =>
-        i === index ? { ...entry, completed: !entry.completed } : entry
-      )
-    );
-  };
+    fetchTimeline();
+  }, [date]);
+
+  if (loading) return <p>Loading timeline...</p>;
 
   return (
     <div className="timeline-container">
-      <h2>Daily Timeline</h2>
-      <div className="timeline-input">
-        <input
-          type="text"
-          placeholder="New task..."
-          value={newTask}
-          onChange={(e) => setNewTask(e.target.value)}
-        />
-        <button onClick={handleAddTask}>Add</button>
-      </div>
-
-      <ul className="timeline-list">
-        {entries.map((entry, index) => (
-          <li
-            key={index}
-            className={`timeline-entry ${entry.completed ? "completed" : ""}`}
-            onClick={() => toggleComplete(index)}
-          >
-            <span className="time">{entry.time}</span>
-            <span className="task">{entry.task}</span>
+      {entries.length === 0 && <p>No events for this day.</p>}
+      <ul>
+        {entries.map((e) => (
+          <li key={e.id} className={`timeline-entry ${e.type.toLowerCase()}`}>
+            <span className="badge">{e.type}</span>
+            <span className="description">{e.description}</span>
+            <span className="user">{e.user.name}</span>
+            <span className="time">{new Date(e.createdAt).toLocaleTimeString()}</span>
           </li>
         ))}
       </ul>

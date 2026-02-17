@@ -1,5 +1,5 @@
 const ExpenseTracker = () => {
-    return <div>Expense Tracker Component</div>;
+    return <div className="expense-tracker">This has not yet been developed!</div>;
 };
 
 export default ExpenseTracker;

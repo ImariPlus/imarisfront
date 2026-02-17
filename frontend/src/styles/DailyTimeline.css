@@ -1,36 +1,28 @@
 .timeline-container {
-  padding: 20px;
-}
-
-.timeline-input {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.timeline-input input {
-  flex: 1;
-  padding: 5px 10px;
-}
-
-.timeline-input button {
-  padding: 5px 15px;
-}
-
-.timeline-list {
-  list-style: none;
-  padding: 0;
+  max-height: 70vh;
+  overflow-y: auto;
 }
 
 .timeline-entry {
   display: flex;
-  gap: 15px;
-  padding: 10px;
-  border-bottom: 1px solid #ccc;
-  cursor: pointer;
+  justify-content: space-between;
+  padding: 0.5rem;
+  border-bottom: 1px solid #eee;
+  align-items: center;
 }
 
-.timeline-entry.completed {
-  text-decoration: line-through;
-  color: #888;
+.timeline-entry .badge {
+  font-weight: bold;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  background-color: #eee;
 }
+
+.timeline-entry.transaction .badge { background-color: #4caf50; color: white; }
+.timeline-entry.expense .badge { background-color: #f44336; color: white; }
+.timeline-entry.payroll .badge { background-color: #2196f3; color: white; }
+.timeline-entry.note .badge { background-color: #9c27b0; color: white; }
+
+.timeline-entry .description { flex: 2; margin: 0 0.5rem; }
+.timeline-entry .user { flex: 1; text-align: right; margin-right: 0.5rem; }
+.timeline-entry .time { flex: 1; text-align: right; font-size: 0.85rem; color: #555; }

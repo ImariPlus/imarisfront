@@ -11,16 +11,37 @@ export const getDashboardSnapshot = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const today = new Date();
-    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+    const now = new Date();
+
+    // ===== TODAY RANGE =====
+    const startOfToday = new Date(now);
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const endOfToday = new Date(now);
+    endOfToday.setHours(23, 59, 59, 999);
+
+    // ===== YESTERDAY RANGE =====
+    const startOfYesterday = new Date(startOfToday);
+    startOfYesterday.setDate(startOfYesterday.getDate() - 1);
 
     /* =========================
-       BASE: TRANSACTIONS (ALL)
+       TODAY TRANSACTIONS (for totals)
     ========================= */
     const transactionsToday = await prisma.transaction.findMany({
-      where: { createdAt: { gte: startOfDay, lte: endOfDay } },
-      orderBy: { createdAt: "desc" },
+      where: {
+        createdAt: {
+          gte: startOfToday,
+          lte: endOfToday,
+        },
+      },
+      include: {
+        physician: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
     });
 
     const totalExpected = transactionsToday.reduce(
@@ -35,13 +56,36 @@ export const getDashboardSnapshot = async (req: Request, res: Response) => {
 
     const netEarnedToday = totalExpected - totalDiscounts;
 
+    /* =========================
+       TODAY + YESTERDAY (for recent list)
+    ========================= */
+    const recentTransactions = await prisma.transaction.findMany({
+      where: {
+        createdAt: {
+          gte: startOfYesterday,
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        physician: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      take: 20, // safe limit
+    });
+
     const baseDashboard = {
       today: {
         totalExpected,
         totalDiscounts,
         netEarnedToday,
       },
-      recentTransactions: transactionsToday.slice(0, 5),
+      recentTransactions,
     };
 
     /* =========================
@@ -56,7 +100,12 @@ export const getDashboardSnapshot = async (req: Request, res: Response) => {
     ========================= */
     const expensesToday = await prisma.expense.aggregate({
       _sum: { amount: true },
-      where: { createdAt: { gte: startOfDay, lte: endOfDay } },
+      where: {
+        createdAt: {
+          gte: startOfToday,
+          lte: endOfToday,
+        },
+      },
     });
 
     const payrolls = await prisma.staffPayroll.findMany({
