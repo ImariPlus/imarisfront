@@ -16,7 +16,7 @@ export const getTransactions = async (req: Request & { auth?: JwtAuth }, res: Re
       orderBy: { createdAt: "desc" },
       include: { 
         physician: true, 
-        createdBy: { select: { id: true, name: true, email: true } } 
+        createdBy: { select: { id: true, name: true, email: true } },
       },
     });
     res.json(transactions);
@@ -48,7 +48,7 @@ export const getTransaction = async (req: Request & { auth?: JwtAuth }, res: Res
 // POST /transactions
 export const createTransaction = async (req: Request & { auth?: JwtAuth }, res: Response) => {
   try {
-    const { clientName, amount, paymentMethod, physicianId, notes } = req.body;
+    const { clientName, amount, paymentMethod, physicianId, notes, discount } = req.body;
 
     // req.auth!.id is safe because auth middleware runs before this
     const transaction = await prisma.transaction.create({
@@ -60,6 +60,18 @@ export const createTransaction = async (req: Request & { auth?: JwtAuth }, res: 
         discount: req.body.discount || 0,
         notes,
         createdById: req.auth!.id,
+      },
+    });
+
+    await prisma.timelineEntry.create({
+      data: {
+        description: JSON.stringify({
+          clientName,
+          amount,
+          physicianId,
+        }),
+        type: "TRANSACTION",
+        userId: req.auth!.id,
       },
     });
 

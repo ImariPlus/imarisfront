@@ -11,19 +11,32 @@ import authRoutes from "./routes/auth.routes";
 import expenseRoutes from "./routes/expense.routes";
 import payrollRoutes from "./routes/payroll.routes";
 import dashboardRoutes from "./routes/dashboard.routes";
+import timelineRoutes from "./routes/timeline.routes";
 
 const app = express();
 
-// ---- CORS Setup ----
-const allowedOrigins = [
-  "https://reimagined-invention-wr57pg975gpjcgq57-5173.app.github.dev",
-  "http://localhost:5173", // local dev
-];
+// ---- CORS Configuration ----
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin)
+        return callback(null, true); // Allow non-browser requests (e.g., Postman, server-to-server)
 
-app.use(cors({
-  origin: true,
-})
+      if (origin.includes("github.dev")) {
+        return callback(null, true);
+      }
+
+      if (origin === process.env.FRONTEND_URL) {
+        return callback(null, true);
+      }
+
+      callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+  })
 );
+
+
 app.use(express.json());
 app.use(cookieParser()); // <-- enables reading cookies
 
@@ -47,6 +60,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/payroll", payrollRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/timeline", timelineRoutes);
 
 // ---- Cron Job ----
 cron.schedule("0 0 1 * *", async () => {
