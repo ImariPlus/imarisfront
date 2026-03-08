@@ -1,10 +1,13 @@
 import { Request, Response } from "express";
-import { PrismaClient, TimelineType } from "@prisma/client";
+import { PrismaClient, TimelineType, TimelineAction, ReferenceType } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 // GET /timeline?date=yyyy-mm-dd
-export const getDailyTimeline = async (req: Request & { auth?: { id: string, role: string } }, res: Response) => {
+export const getDailyTimeline = async (
+  req: Request & { auth?: { id: string; role: string } },
+  res: Response
+) => {
   try {
     const { date } = req.query;
     const targetDate = date ? new Date(date as string) : new Date();
@@ -17,7 +20,10 @@ export const getDailyTimeline = async (req: Request & { auth?: { id: string, rol
 
     const timelineEntries = await prisma.timelineEntry.findMany({
       where: { createdAt: { gte: startOfDay, lte: endOfDay } },
-      include: { user: { select: { id: true, name: true } } },
+      include: {
+        performedBy: { select: { id: true, name: true } },
+        approvedBy: { select: { id: true, name: true } },
+      },
       orderBy: { createdAt: "desc" },
     });
 
@@ -29,14 +35,33 @@ export const getDailyTimeline = async (req: Request & { auth?: { id: string, rol
 };
 
 // POST /timeline
-export const addTimelineEntry = async (req: Request & { auth?: { id: string, role: string } }, res: Response) => {
+export const addTimelineEntry = async (
+  req: Request & { auth?: { id: string; role: string } },
+  res: Response
+) => {
   try {
-    const { description, type } = req.body;
+    const {
+      type,
+      action,
+      referenceId,
+      referenceType,
+      metadata,
+      approvedById,
+    } = req.body;
+
+    if (!type || !action) {
+      return res.status(400).json({ message: "type and action are required" });
+    }
+
     const entry = await prisma.timelineEntry.create({
       data: {
-        description,
         type,
-        userId: req.auth!.id,
+        action,
+        performedById: req.auth!.id,
+        approvedById: approvedById || null,
+        referenceId: referenceId || null,
+        referenceType: referenceType || null,
+        metadata: metadata || null,
       },
     });
 
@@ -48,14 +73,31 @@ export const addTimelineEntry = async (req: Request & { auth?: { id: string, rol
 };
 
 // PUT /timeline/:id
-export const updateTimelineEntry = async (req: Request & { auth?: { id: string, role: string } }, res: Response) => {
+export const updateTimelineEntry = async (
+  req: Request & { auth?: { id: string; role: string } },
+  res: Response
+) => {
   try {
     const { id } = req.params;
-    const { description, type } = req.body;
+    const {
+      type,
+      action,
+      referenceId,
+      referenceType,
+      metadata,
+      approvedById,
+    } = req.body;
 
     const updated = await prisma.timelineEntry.update({
       where: { id },
-      data: { description, type },
+      data: {
+        type,
+        action,
+        referenceId: referenceId || null,
+        referenceType: referenceType || null,
+        metadata: metadata || null,
+        approvedById: approvedById || null,
+      },
     });
 
     res.json(updated);
@@ -66,7 +108,10 @@ export const updateTimelineEntry = async (req: Request & { auth?: { id: string, 
 };
 
 // DELETE /timeline/:id
-export const deleteTimelineEntry = async (req: Request & { auth?: { id: string, role: string } }, res: Response) => {
+export const deleteTimelineEntry = async (
+  req: Request & { auth?: { id: string; role: string } },
+  res: Response
+) => {
   try {
     const { id } = req.params;
     await prisma.timelineEntry.delete({ where: { id } });

@@ -1,144 +1,223 @@
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+    provider = "sqlite"
+      url      = env("DATABASE_URL")
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      UserRole @default(USER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+    id        String   @id @default(cuid())
+      name      String
+        email     String   @unique
+          password  String
+            role      UserRole @default(USER)
+              createdAt DateTime @default(now())
+                updatedAt DateTime @updatedAt
 
-  transactions     Transaction[]
-  staffPayrolls    StaffPayroll[]
-  timelineEntries  TimelineEntry[]
-  recordedExpenses Expense[]       @relation("RecordedExpenses")
-  advances         Expense[]       @relation("StaffAdvances")
+                  transactions  Transaction[]
+                    staffPayrolls StaffPayroll[]
+
+                      performedTimelineEntries TimelineEntry[] @relation("PerformedBy")
+                        approvedTimelineEntries  TimelineEntry[] @relation("ApprovedBy")
+
+                          recordedExpenses Expense[]  @relation("RecordedExpenses")
+                            advances         Expense[]  @relation("StaffAdvances")
+                              employees        Employee[]
 }
 
 enum UserRole {
-  ADMIN
-  USER
-  FINANCE
+    ADMIN
+      USER
+        FINANCE
 }
 
 model Physician {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
+    id        String   @id @default(cuid())
+      name      String   @unique
+        active    Boolean  @default(true)
+          createdAt DateTime @default(now())
 
-  transactions Transaction[]
+            transactions Transaction[]
 }
 
 model Transaction {
-  id            String        @id @default(cuid())
-  clientName    String
-  amount        Float
-  discount      Float?
-  notes         String?
-  paymentMethod PaymentMethod
+    id            String        @id @default(cuid())
+      clientName    String
+        amount        Float
+          discount      Float?
+            notes         String?
+              paymentMethod PaymentMethod
 
-  physicianId String
-  physician   Physician @relation(fields: [physicianId], references: [id])
+                physicianId String
+                  physician   Physician @relation(fields: [physicianId], references: [id])
 
-  createdById String
-  createdBy   User   @relation(fields: [createdById], references: [id])
+                    createdById String
+                      createdBy   User   @relation(fields: [createdById], references: [id])
 
-  createdAt DateTime @default(now())
+                        createdAt DateTime @default(now())
+
+                          @@index([createdAt])
 }
 
 enum PaymentMethod {
-  CASH
-  MOBILE
-  BANK
+    CASH
+      MOBILE
+        BANK
 }
 
 model TimelineEntry {
-  id          String       @id @default(cuid())
-  description String
-  type        TimelineType
-  createdAt   DateTime     @default(now())
+    id        String          @id @default(cuid())
+      type      TimelineType
+        action    TimelineAction?
+          createdAt DateTime        @default(now())
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
+            performedById String?
+              performedBy   User?   @relation("PerformedBy", fields: [performedById], references: [id])
+
+                approvedById String?
+                  approvedBy   User?   @relation("ApprovedBy", fields: [approvedById], references: [id])
+
+                    referenceId   String?
+                      referenceType ReferenceType?
+
+                        metadata Json?
+
+                          @@index([createdAt])
+                            @@index([referenceId])
 }
 
 enum TimelineType {
-  TRANSACTION
-  EXPENSE
-  PAYROLL
-  NOTE
+    TRANSACTION
+      EXPENSE
+        PAYROLL
+          NOTE
+}
+
+enum TimelineAction {
+    CREATED
+      UPDATED
+        DELETED
+          APPROVED
+            PAID
+}
+
+enum ReferenceType {
+    TRANSACTION
+      EXPENSE
+        PAYROLL
 }
 
 model StaffPayroll {
-  id      String @id @default(cuid())
-  staffId String
-  staff   User   @relation(fields: [staffId], references: [id])
+    id      String @id @default(cuid())
+      staffId String
+        staff   User   @relation(fields: [staffId], references: [id])
 
-  month Int
-  year  Int
+          month Int
+            year  Int
 
-  grossPay        Float
-  advancesTaken   Float @default(0)
-  savedAmount     Float @default(0)
-  remainingAmount Float @default(0)
-  netPayable      Float @default(0)
+              grossPay        Float
+                advancesTaken   Float @default(0)
+                  savedAmount     Float @default(0)
+                    remainingAmount Float @default(0)
+                      netPayable      Float @default(0)
 
-  status PayrollStatus @default(PENDING)
+                        status PayrollStatus @default(PENDING)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+                          createdAt  DateTime  @default(now())
+                            updatedAt  DateTime  @updatedAt
+                              employee   Employee? @relation(fields: [employeeId], references: [id])
+                                employeeId String?
 
-  @@unique([staffId, month, year])
+                                  @@unique([staffId, month, year])
+                                    @@index([createdAt])
 }
 
 enum PayrollStatus {
-  PENDING
-  CLOSED
-  PAID
+    PENDING
+      CLOSED
+        PAID
 }
 
 model Expense {
-  id        String          @id @default(cuid())
-  title     String
-  amount    Float
-  category  ExpenseCategory
-  notes     String?
-  createdAt DateTime        @default(now())
+    id        String          @id @default(cuid())
+      title     String
+        amount    Float
+          category  ExpenseCategory
+            notes     String?
+              createdAt DateTime        @default(now())
 
-  staffId String?
-  staff   User?   @relation("StaffAdvances", fields: [staffId], references: [id])
+                staffId String?
+                  staff   User?   @relation("StaffAdvances", fields: [staffId], references: [id])
 
-  recordedById String
-  recordedBy   User   @relation("RecordedExpenses", fields: [recordedById], references: [id])
+                    recordedById String
+                      recordedBy   User   @relation("RecordedExpenses", fields: [recordedById], references: [id])
+
+                        @@index([createdAt])
 }
 
 enum ExpenseCategory {
-  SUPPLIES
-  UTILITIES
-  RENT
-  SALARY
-  ADVANCE
-  OTHER
+    SUPPLIES
+      UTILITIES
+        RENT
+          SALARY
+            ADVANCE
+              OTHER
 }
 
 model PayrollAccrual {
-  id        String @id @default(cuid())
-  month     String
-  staffName String
+    id        String @id @default(cuid())
+      month     String
+        staffName String
 
-  expectedPay Float
-  savedSoFar  Float @default(0)
-  paidSoFar   Float @default(0)
+          expectedPay Float
+            savedSoFar  Float @default(0)
+              paidSoFar   Float @default(0)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+                createdAt DateTime @default(now())
+                  updatedAt DateTime @updatedAt
+}
+
+model Employee {
+    id         String  @id @default(cuid())
+      name       String
+        roles      EmployeeRole[]
+          department String?
+            userId     String? // optional link if this employee is also a system user
+              user       User?   @relation(fields: [userId], references: [id])
+
+                payrolls  StaffPayroll[]
+                  createdAt DateTime       @default(now())
+                    updatedAt DateTime       @updatedAt
+}
+
+enum EmployeeRole {
+    DOCTOR
+      NURSE
+        LAB_TECH
+          CLEANER
+            RECEPTIONIST
+              CASHIER
+                ADMIN
+                  MANAGER
+}
+
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
 }

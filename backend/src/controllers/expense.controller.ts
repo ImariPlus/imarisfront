@@ -1,12 +1,24 @@
 import { Request, Response } from "express";
-import { PrismaClient, ExpenseCategory } from "@prisma/client";
+import {
+  PrismaClient,
+  ExpenseCategory,
+  TimelineType,
+  TimelineAction,
+  ReferenceType,
+} from "@prisma/client";
 
-const prismaClient = new PrismaClient();
+const prisma = new PrismaClient();
 
+interface JwtAuth {
+  id: string;
+  role: "ADMIN" | "FINANCE" | "USER";
+}
+
+// GET /expenses
 export const getExpenses = async (req: Request, res: Response) => {
   const { from, to } = req.query;
 
-  const expenses = await prismaClient.expense.findMany({
+  const expenses = await prisma.expense.findMany({
     where: {
       createdAt: {
         gte: from ? new Date(String(from)) : undefined,
@@ -24,12 +36,13 @@ export const getExpenses = async (req: Request, res: Response) => {
   res.json(expenses);
 };
 
-export const createExpense = async (req: Request, res: Response) => {
+// POST /expenses
+export const createExpense = async (
+  req: Request & { auth?: JwtAuth },
+  res: Response
+) => {
   const auth = req.auth;
-
-  if (!auth) {
-    return res.status(401).json({ message: "Unauthenticated" });
-  }
+  if (!auth) return res.status(401).json({ message: "Unauthenticated" });
 
   const { title, amount, category, notes } = req.body;
 
@@ -41,63 +54,129 @@ export const createExpense = async (req: Request, res: Response) => {
     return res.status(400).json({ message: "Invalid expense category" });
   }
 
-  const expense = await prismaClient.expense.create({
-    data: {
-      title,
-      amount,
-      category,
-      notes,
-      recordedBy: {
-        connect: { id: auth.id },
-      },
-    },
-  });
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      const expense = await tx.expense.create({
+        data: {
+          title,
+          amount,
+          category,
+          notes,
+          recordedBy: { connect: { id: auth.id } },
+        },
+      });
 
-  res.status(201).json(expense);
+      await tx.timelineEntry.create({
+        data: {
+          type: TimelineType.EXPENSE,
+          action: TimelineAction.CREATED,
+          performedById: auth.id,
+          referenceId: expense.id,
+          referenceType: ReferenceType.EXPENSE,
+          metadata: {
+            title,
+            amount,
+            category,
+            notes: notes || null,
+          },
+        },
+      });
+
+      return expense;
+    });
+
+    res.status(201).json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to create expense" });
+  }
 };
 
-export const updateExpense = async (req: Request, res: Response) => {
+// PUT /expenses/:id
+export const updateExpense = async (
+  req: Request & { auth?: JwtAuth },
+  res: Response
+) => {
   const auth = req.auth;
-
-  if (!auth) {
-    return res.status(401).json({ message: "Unauthenticated" });
-  }
+  if (!auth) return res.status(401).json({ message: "Unauthenticated" });
 
   const { id } = req.params;
   const { title, amount, category, notes } = req.body;
 
-  const expense = await prismaClient.expense.findUnique({ where: { id } });
-  if (!expense) {
-    return res.status(404).json({ message: "Expense not found" });
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      const existing = await tx.expense.findUnique({ where: { id } });
+      if (!existing) throw new Error("NOT_FOUND");
+
+      if (category && !Object.values(ExpenseCategory).includes(category)) {
+        throw new Error("INVALID_CATEGORY");
+      }
+
+      const updated = await tx.expense.update({
+        where: { id },
+        data: { title, amount, category, notes },
+      });
+
+      await tx.timelineEntry.create({
+        data: {
+          type: TimelineType.EXPENSE,
+          action: TimelineAction.UPDATED,
+          performedById: auth.id,
+          referenceId: id,
+          referenceType: ReferenceType.EXPENSE,
+          metadata: {
+            title,
+            amount,
+            category,
+            notes,
+          },
+        },
+      });
+
+      return updated;
+    });
+
+    res.json(result);
+  } catch (err: any) {
+    if (err.message === "NOT_FOUND") {
+      return res.status(404).json({ message: "Expense not found" });
+    }
+    if (err.message === "INVALID_CATEGORY") {
+      return res.status(400).json({ message: "Invalid expense category" });
+    }
+    console.error(err);
+    res.status(500).json({ message: "Failed to update expense" });
   }
-
-  if (category && !Object.values(ExpenseCategory).includes(category)) {
-    return res.status(400).json({ message: "Invalid expense category" });
-  }
-
-  const updated = await prismaClient.expense.update({
-    where: { id },
-    data: {
-      title,
-      amount,
-      category,
-      notes,
-    },
-  });
-
-  res.json(updated);
 };
 
-export const deleteExpense = async (req: Request, res: Response) => {
+// DELETE /expenses/:id
+export const deleteExpense = async (
+  req: Request & { auth?: JwtAuth },
+  res: Response
+) => {
   const auth = req.auth;
-
-  if (!auth) {
-    return res.status(401).json({ message: "Unauthenticated" });
-  }
+  if (!auth) return res.status(401).json({ message: "Unauthenticated" });
 
   const { id } = req.params;
 
-  await prismaClient.expense.delete({ where: { id } });
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.timelineEntry.create({
+        data: {
+          type: TimelineType.EXPENSE,
+          action: TimelineAction.DELETED,
+          performedById: auth.id,
+          referenceId: id,
+          referenceType: ReferenceType.EXPENSE,
+        },
+      });
 
-  res.status(204).send();
+      await tx.expense.delete({ where: { id } });
+    });
+
+    res.status(204).send();
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to delete expense" });
+  }
 };

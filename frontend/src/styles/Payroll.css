@@ -1,0 +1,115 @@
+.payroll-card {
+  width: 190px;
+  padding: 18px;
+  border-radius: 14px;
+  background: white;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  text-align: center;
+  position: relative;
+}
+
+.avatar-progress {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: auto;
+}
+
+.progress-ring {
+  transform: rotate(-90deg);
+}
+
+.ring-bg {
+  fill: none;
+  stroke: #f1f1f1;
+  stroke-width: 8;
+}
+
+.ring-progress {
+  fill: none;
+  stroke: url(#gradient);
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.6s ease;
+}
+
+.avatar-img {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.payroll-info h4 {
+  margin-top: 12px;
+  font-size: 16px;
+}
+
+.payroll-info p {
+  margin: 4px 0;
+  font-weight: 600;
+}
+
+.saved-label {
+  font-size: 12px;
+  color: #777;
+}
+
+.more-btn {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  border: none;
+  background: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.payroll-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+/* Skeleton styles */
+.skeleton {
+  background-color: #f4f4f4;
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+.skeleton-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: #ddd;
+  margin: auto;
+}
+
+.skeleton-line {
+  height: 12px;
+  background-color: #ddd;
+  border-radius: 6px;
+  margin: 8px 0;
+}
+
+.skeleton-line.short {
+  width: 40%;
+}
+
+.skeleton-line.long {
+  width: 70%;
+}
+
+.skeleton-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #ddd;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}

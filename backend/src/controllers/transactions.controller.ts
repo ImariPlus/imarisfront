@@ -1,21 +1,23 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, TimelineType, TimelineAction, ReferenceType } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// Type for our auth object on the request
 interface JwtAuth {
   id: string;
   role: "ADMIN" | "FINANCE" | "USER";
 }
 
 // GET /transactions
-export const getTransactions = async (req: Request & { auth?: JwtAuth }, res: Response) => {
+export const getTransactions = async (
+  req: Request & { auth?: JwtAuth },
+  res: Response
+) => {
   try {
     const transactions = await prisma.transaction.findMany({
       orderBy: { createdAt: "desc" },
-      include: { 
-        physician: true, 
+      include: {
+        physician: true,
         createdBy: { select: { id: true, name: true, email: true } },
       },
     });
@@ -26,56 +28,49 @@ export const getTransactions = async (req: Request & { auth?: JwtAuth }, res: Re
   }
 };
 
-// GET /transactions/:id
-export const getTransaction = async (req: Request & { auth?: JwtAuth }, res: Response) => {
-  try {
-    const { id } = req.params;
-    const transaction = await prisma.transaction.findUnique({
-      where: { id },
-      include: { 
-        physician: true, 
-        createdBy: { select: { id: true, name: true, email: true } } 
-      },
-    });
-    if (!transaction) return res.status(404).json({ message: "Transaction not found" });
-    res.json(transaction);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to fetch transaction" });
-  }
-};
-
 // POST /transactions
-export const createTransaction = async (req: Request & { auth?: JwtAuth }, res: Response) => {
+export const createTransaction = async (
+  req: Request & { auth?: JwtAuth },
+  res: Response
+) => {
   try {
     const { clientName, amount, paymentMethod, physicianId, notes, discount } = req.body;
 
-    // req.auth!.id is safe because auth middleware runs before this
-    const transaction = await prisma.transaction.create({
-      data: {
-        clientName,
-        amount,
-        paymentMethod,
-        physicianId,
-        discount: req.body.discount || 0,
-        notes,
-        createdById: req.auth!.id,
-      },
-    });
-
-    await prisma.timelineEntry.create({
-      data: {
-        description: JSON.stringify({
+    const result = await prisma.$transaction(async (tx) => {
+      const transaction = await tx.transaction.create({
+        data: {
           clientName,
           amount,
+          paymentMethod,
           physicianId,
-        }),
-        type: "TRANSACTION",
-        userId: req.auth!.id,
-      },
+          discount: discount || 0,
+          notes,
+          createdById: req.auth!.id,
+        },
+      });
+
+      await tx.timelineEntry.create({
+        data: {
+          type: TimelineType.TRANSACTION,
+          action: TimelineAction.CREATED,
+          performedById: req.auth!.id,
+          referenceId: transaction.id,
+          referenceType: ReferenceType.TRANSACTION,
+          metadata: {
+            clientName,
+            amount,
+            discount: discount || 0,
+            paymentMethod,
+            physicianId,
+            notes: notes || null,
+          },
+        },
+      });
+
+      return transaction;
     });
 
-    res.status(201).json(transaction);
+    res.status(201).json(result);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to create transaction" });
@@ -83,17 +78,40 @@ export const createTransaction = async (req: Request & { auth?: JwtAuth }, res: 
 };
 
 // PUT /transactions/:id
-export const updateTransaction = async (req: Request & { auth?: JwtAuth }, res: Response) => {
+export const updateTransaction = async (
+  req: Request & { auth?: JwtAuth },
+  res: Response
+) => {
   try {
     const { id } = req.params;
     const { clientName, amount, paymentMethod, notes } = req.body;
 
-    const updated = await prisma.transaction.update({
-      where: { id },
-      data: { clientName, amount, paymentMethod, notes },
+    const result = await prisma.$transaction(async (tx) => {
+      const updated = await tx.transaction.update({
+        where: { id },
+        data: { clientName, amount, paymentMethod, notes },
+      });
+
+      await tx.timelineEntry.create({
+        data: {
+          type: TimelineType.TRANSACTION,
+          action: TimelineAction.UPDATED,
+          performedById: req.auth!.id,
+          referenceId: id,
+          referenceType: ReferenceType.TRANSACTION,
+          metadata: {
+            clientName,
+            amount,
+            paymentMethod,
+            notes,
+          },
+        },
+      });
+
+      return updated;
     });
 
-    res.json(updated);
+    res.json(result);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to update transaction" });
@@ -101,11 +119,27 @@ export const updateTransaction = async (req: Request & { auth?: JwtAuth }, res: 
 };
 
 // DELETE /transactions/:id
-export const deleteTransaction = async (req: Request & { auth?: JwtAuth }, res: Response) => {
+export const deleteTransaction = async (
+  req: Request & { auth?: JwtAuth },
+  res: Response
+) => {
   try {
     const { id } = req.params;
 
-    await prisma.transaction.delete({ where: { id } });
+    await prisma.$transaction(async (tx) => {
+      await tx.timelineEntry.create({
+        data: {
+          type: TimelineType.TRANSACTION,
+          action: TimelineAction.DELETED,
+          performedById: req.auth!.id,
+          referenceId: id,
+          referenceType: ReferenceType.TRANSACTION,
+        },
+      });
+
+      await tx.transaction.delete({ where: { id } });
+    });
+
     res.json({ message: "Transaction deleted" });
   } catch (error) {
     console.error(error);

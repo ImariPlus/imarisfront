@@ -4,7 +4,7 @@ import Sidebar from "./components/Sidebar";
 import Dashboard from "./components/Dashboard/Dashboard";
 import NewTransaction from "./components/NewTransaction";
 import DailyTimeline from "./components/DailyTimeline";
-import PayrollModule from "./components/PayrollModule/PayrollModule";
+import Payroll from "./components/Payroll";
 import ExpenseTracker from "./components/ExpenseTracker";
 import Login from "./components/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -50,7 +50,7 @@ const App: React.FC = () => {
               path="/payroll"
               element={
                 <ProtectedRoute>
-                  <PayrollModule />
+                  <Payroll />
                 </ProtectedRoute>
               }
             />

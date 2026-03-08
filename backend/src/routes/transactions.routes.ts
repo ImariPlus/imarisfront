@@ -9,7 +9,7 @@ const router = Router();
 router.use(authenticate);
 
 router.get("/", transactionsController.getTransactions);
-router.get("/:id", transactionsController.getTransaction);
+router.get("/:id", transactionsController.getTransactions);
 router.post("/", transactionsController.createTransaction);
 router.put("/:id", isAdmin, transactionsController.updateTransaction);
 router.delete("/:id", isAdmin, transactionsController.deleteTransaction);
