@@ -15,16 +15,17 @@ const Sidebar: React.FC = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-  // If no token, don't render the sidebar
   if (!token) return null;
 
   let userName: string | undefined = undefined;
+  let userRole: string | undefined = undefined;
   try {
     const decoded = jwtDecode<JwtPayload>(token);
     userName = decoded.name;
+    userRole = decoded.role;
   } catch (err) {
     console.error("Invalid token:", err);
-    return null; // don't render sidebar if token invalid
+    return null;
   }
 
   const handleLogout = () => {
@@ -45,6 +46,12 @@ const Sidebar: React.FC = () => {
         <NavLink to="/timeline">Daily Timeline</NavLink>
         <NavLink to="/payroll">Payroll</NavLink>
         <NavLink to="/expenses">Expense Tracker</NavLink>
+        {(userRole === "ADMIN" || userRole === "FINANCE") && (
+          <NavLink to="/insights">Monthly Insights</NavLink>
+        )}
+        {userRole === "ADMIN" && (
+          <NavLink to="/users">Staff Accounts</NavLink>
+        )}
       </nav>
 
       <button onClick={handleLogout} className="logout-btn">

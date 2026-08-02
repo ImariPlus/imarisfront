@@ -182,7 +182,7 @@ model PayrollAccrual {
 model Employee {
     id         String  @id @default(cuid())
       name       String
-        roles      EmployeeRole[]
+        roles      EmployeeRole @default(RECEPTIONIST)
           department String?
             userId     String? // optional link if this employee is also a system user
               user       User?   @relation(fields: [userId], references: [id])

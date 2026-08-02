@@ -1,5 +1,5 @@
-const ExpenseTracker = () => {
-    return <div className="expense-tracker">This has not yet been developed!</div>;
-};
+import Expenses from "./Expenses";
 
-export default ExpenseTracker;
+export default function ExpenseTracker() {
+  return <Expenses />;
+}

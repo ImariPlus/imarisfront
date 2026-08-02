@@ -12,6 +12,7 @@ import expenseRoutes from "./routes/expense.routes";
 import payrollRoutes from "./routes/payroll.routes";
 import dashboardRoutes from "./routes/dashboard.routes";
 import timelineRoutes from "./routes/timeline.routes";
+import insightsRoutes from "./routes/insights.routes";
 
 const app = express();
 
@@ -61,7 +62,7 @@ app.use("/api/expenses", expenseRoutes);
 app.use("/api/payroll", payrollRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/timeline", timelineRoutes);
-
+app.use("/api/insights", insightsRoutes);
 // ---- Cron Job ----
 cron.schedule("0 0 1 * *", async () => {
   try {

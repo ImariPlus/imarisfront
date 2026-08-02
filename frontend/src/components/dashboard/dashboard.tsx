@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api";
 import { formatMoney } from "../../utils/format";
-import DashboardSkeleton from "./DashboardSkeleton";
+import DashboardSkeleton from "./skeleton.dashboard";
 import "../../styles/Dashboard.css";
 
 interface Transaction {
