@@ -1,0 +1,75 @@
+.cs-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0.75rem var(--space-4);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-fast), opacity var(--transition-fast);
+  flex-wrap: wrap;
+}
+
+.cs-item:hover { box-shadow: var(--shadow-md); }
+
+.cs-item--inactive { opacity: 0.5; }
+
+.cs-item--editing {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-3);
+}
+
+.cs-item__fields {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.cs-item__fields input,
+.cs-item__fields select {
+  flex: 1;
+  min-width: 140px;
+}
+
+.cs-item__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.cs-item__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.cs-item__name {
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.cs-item__inactive-tag {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  padding: 0.1rem 0.4rem;
+  border-radius: var(--radius-full);
+}
+
+.cs-item__actions {
+  display: flex;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}

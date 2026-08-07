@@ -47,8 +47,8 @@ export default function ListExpenses({ refreshTrigger }: { refreshTrigger: numbe
   const fetchExpenses = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await getExpenses({ from, to });
-      setExpenses(data);
+      const data = await getExpenses({ from, to: to + "T23:59:59" });
+      setExpenses(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Failed to fetch expenses", err);
     } finally {

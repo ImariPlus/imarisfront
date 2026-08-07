@@ -7,8 +7,6 @@ interface JwtPayload {
   id: string;
   name?: string;
   role?: string;
-  exp?: number;
-  iat?: number;
 }
 
 const Sidebar: React.FC = () => {
@@ -17,14 +15,13 @@ const Sidebar: React.FC = () => {
 
   if (!token) return null;
 
-  let userName: string | undefined = undefined;
-  let userRole: string | undefined = undefined;
+  let userName: string | undefined;
+  let userRole: string | undefined;
   try {
     const decoded = jwtDecode<JwtPayload>(token);
     userName = decoded.name;
     userRole = decoded.role;
-  } catch (err) {
-    console.error("Invalid token:", err);
+  } catch {
     return null;
   }
 
@@ -49,14 +46,18 @@ const Sidebar: React.FC = () => {
         {(userRole === "ADMIN" || userRole === "FINANCE") && (
           <NavLink to="/insights">Monthly Insights</NavLink>
         )}
-        {userRole === "ADMIN" && (
-          <NavLink to="/users">Staff Accounts</NavLink>
-        )}
       </nav>
 
-      <button onClick={handleLogout} className="logout-btn">
-        Logout
-      </button>
+      <div className="sidebar-bottom">
+        {userRole === "ADMIN" && (
+          <NavLink to="/settings" className="settings-link">
+            ⚙️ Settings
+          </NavLink>
+        )}
+        <button onClick={handleLogout} className="logout-btn">
+          Logout
+        </button>
+      </div>
     </aside>
   );
 };

@@ -1,0 +1,361 @@
+# Imari+ Role-Based Frontend & Access Plan (v1)
+
+This document defines who can access each feature in Imari+ and what appears in the frontend for each role. It is the reference for future development decisions.
+
+---
+
+## Roles
+
+### USER (Cashier / Receptionist)
+
+Operational staff who register patients and receive payments.
+
+### FINANCE (Accountant / Finance Officer)
+
+Staff responsible for clinic finances, expenses, payroll savings, and reporting.
+
+### ADMIN (Manager / Clinical Representative / Owner)
+
+Full system oversight and configuration access.
+
+---
+
+# Sidebar Navigation by Role
+
+## USER
+
+* Dashboard
+* Transactions
+* Timeline
+
+## FINANCE
+
+* Dashboard
+* Transactions
+* Expenses
+* Payroll
+* Timeline
+* Reports
+
+## ADMIN
+
+* Dashboard
+* Transactions
+* Expenses
+* Payroll
+* Timeline
+* Reports
+* Settings
+
+---
+
+# Dashboard
+
+## USER Dashboard
+
+### Visible
+
+* Payments collected today
+* Number of transactions today
+* Last 5 transactions created by the current user
+* Quick “New Transaction” button
+* Current shift summary
+
+### Hidden
+
+* Expenses
+* Payroll
+* Profit
+* Clinic-wide totals
+* Other staff activity
+
+## FINANCE Dashboard
+
+### Visible
+
+* Total collected today
+* Net earned today
+* Expenses today
+* Remaining payroll
+* Payroll savings progress
+* Payment method breakdown
+
+## ADMIN Dashboard
+
+### Visible
+
+Everything from Finance, plus:
+
+* Revenue trends
+* Top clinicians
+* Outstanding payroll
+* User activity
+* Clinic alerts
+
+---
+
+# Transactions
+
+## USER
+
+### Can
+
+* View transactions
+* Create transactions
+* View own recent transactions
+
+### Cannot
+
+* Delete transactions
+* Edit transactions after approval
+* Edit other users’ transactions
+
+## FINANCE
+
+### Can
+
+* View all transactions
+* Create transactions
+* Edit transactions
+* Correct payment information
+
+## ADMIN
+
+### Can
+
+* Full transaction management
+* Delete transactions
+* Approve or reverse corrections
+
+---
+
+# Expenses
+
+## USER
+
+* No access
+
+## FINANCE
+
+* View all expenses
+* Create expenses
+* Edit expenses
+* Export expense reports
+
+## ADMIN
+
+* Full expense access
+
+---
+
+# Payroll
+
+## USER
+
+* No access
+
+## FINANCE
+
+* View payrolls
+* Initialize payroll
+* Add daily savings
+* Finalize payroll
+* View payroll progress
+
+## ADMIN
+
+* Full payroll access
+
+---
+
+# Timeline
+
+The timeline is a daily audit log.
+
+## USER
+
+Sees only their own actions:
+
+* Transactions created
+* Receipts printed
+* Corrections made by them
+
+## FINANCE
+
+Sees all financial events:
+
+* Transactions
+* Expenses
+* Payroll updates
+* Approvals
+* Corrections
+
+## ADMIN
+
+Sees the complete system timeline.
+
+---
+
+# Reports
+
+## USER Reports
+
+* My transactions today
+* My transactions this month
+* My payment method summary
+* Receipt history
+
+## FINANCE Reports
+
+* Daily revenue
+* Monthly revenue
+* Expense reports
+* Payroll funding status
+* Payment method reconciliation
+* Cashbook export
+
+## ADMIN Reports
+
+Everything Finance sees, plus:
+
+* Revenue by clinician
+* Revenue by department
+* User performance
+* Growth trends
+* Audit reports
+
+---
+
+# Settings (ADMIN only)
+
+Settings contains configuration features, not daily operational tools.
+
+## Tabs
+
+* Clinic
+* Clinical Staff
+* System Users
+* Preferences
+
+### Clinic
+
+* Clinic name
+* Logo
+* Address
+* Phone
+* Email
+* Registration/TIN
+* Currency
+* Timezone
+
+### Clinical Staff
+
+* Doctors
+* Nurses
+* Lab technicians
+* Other clinicians used in transactions and reports
+
+### System Users
+
+* Create login accounts
+* Edit name/email
+* Assign role (ADMIN / FINANCE / USER)
+* Reset password
+* Deactivate account
+
+### Preferences
+
+* Language
+* Date format
+* Time format
+* Currency display
+* Theme (future)
+
+---
+
+# Frontend Components by Feature
+
+## Dashboard
+
+* Stat cards
+* Payroll progress card
+* Recent transactions list
+* Loading skeletons
+
+## Transactions
+
+* Transaction form
+* Transaction table
+* Search/filter
+* Receipt actions
+
+## Expenses
+
+* Expense form
+* Expense list
+* Category badges
+* Date filters
+
+## Payroll
+
+* Payroll cards with circular progress ring
+* Payroll list
+* Payroll form
+* Daily savings form
+* Payroll skeletons
+
+## Timeline
+
+* Daily grouped entries
+* Type badges
+* Expandable details
+
+## Reports
+
+* Filter panel
+* Summary cards
+* Export buttons
+* Charts (future)
+
+## Settings
+
+* Tab navigation
+* User management forms
+* Clinical staff forms
+* Clinic settings form
+
+---
+
+# Security Principles
+
+* Users see only information necessary for their job.
+* Payroll data is restricted to FINANCE and ADMIN.
+* Expense data is restricted to FINANCE and ADMIN.
+* Transaction deletion is restricted to ADMIN.
+* Timeline visibility is filtered by role.
+* Settings is ADMIN-only.
+
+---
+
+# Current v1 Scope
+
+The MVP includes:
+
+* Authentication
+* Dashboard
+* Transactions
+* Expenses
+* Payroll savings workflow
+* Timeline
+* Basic reports
+* Settings (Clinic, Clinical Staff, System Users, Preferences)
+
+Deferred for later versions:
+
+* Insurance reimbursement tracking
+* Multi-clinic SaaS tenancy
+* Custom roles & permissions
+* Advanced analytics
+* Inventory
+* Appointment scheduling
+* Employee HR profiles

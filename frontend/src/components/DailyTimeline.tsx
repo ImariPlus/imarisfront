@@ -4,10 +4,12 @@ import "../styles/DailyTimeline.css";
 
 interface TimelineEntry {
   id: string;
-  description: string;
   type: "TRANSACTION" | "EXPENSE" | "PAYROLL" | "NOTE";
+  action: string | null;
   createdAt: string;
-  user: { id: string; name: string };
+  performedBy: { id: string; name: string } | null;
+  approvedBy: { id: string; name: string } | null;
+  metadata: Record<string, unknown> | null;
 }
 
 interface DailyTimelineProps {
@@ -22,7 +24,7 @@ const DailyTimeline: React.FC<DailyTimelineProps> = ({ date }) => {
     const fetchTimeline = async () => {
       try {
         const res = await api.get("/api/timeline", { params: { date } });
-        setEntries(res.data);
+        setEntries(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
         console.error(err);
       } finally {
@@ -42,8 +44,8 @@ const DailyTimeline: React.FC<DailyTimelineProps> = ({ date }) => {
         {entries.map((e) => (
           <li key={e.id} className={`timeline-entry ${e.type.toLowerCase()}`}>
             <span className="badge">{e.type}</span>
-            <span className="description">{e.description}</span>
-            <span className="user">{e.user.name}</span>
+            <span className="description">{e.action}</span>
+            <span className="user">{e.performedBy?.name ?? "System"}</span>
             <span className="time">{new Date(e.createdAt).toLocaleTimeString()}</span>
           </li>
         ))}

@@ -34,6 +34,7 @@ export default function Expenses() {
     <div className="expenses-page">
       <div className="expenses-header">
         <h2>Expense Tracker</h2>
+        <p>Monitor clinic spending, payroll advances, and operational costs.</p>
       </div>
 
       <div className="expenses-layout">

@@ -15,4 +15,4 @@ regenerate prisma db, reset the password, reset JWT secret and then re-migrate p
     - collapsible sidebar
     - backend summary cards auto-koading on dashboard
     - wiring the dashboard backend route
-    - animations
+    - animations(these are coming along well)

@@ -9,6 +9,8 @@ import ExpenseTracker from "./components/ExpenseTracker";
 import Login from "./components/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Insights from "./components/Insights";
+import ClinicalStaff from "./components/ClinicalStaff";
+import Settings from "./components/Settings";
 import "./App.css";
 
 const App: React.FC = () => {
@@ -71,6 +73,21 @@ const App: React.FC = () => {
                   <Insights />
                 </ProtectedRoute>
               }
+            />
+
+            <Route
+              path="/clinical-staff"
+              element={
+                <ProtectedRoute>
+                  <ClinicalStaff />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/settings" element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+              } 
             />
 
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
