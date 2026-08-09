@@ -8,8 +8,8 @@ import Payroll from "./components/Payroll";
 import ExpenseTracker from "./components/ExpenseTracker";
 import Login from "./components/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Insights from "./components/Insights";
 import Settings from "./components/Settings";
+import ReportsPage from "./components/reports/ReportsPage";
 import "./App.css";
 
 const App: React.FC = () => {
@@ -53,13 +53,11 @@ const App: React.FC = () => {
             } />
             <Route path="/reports" element={
               <ProtectedRoute allowedRoles={["ADMIN", "FINANCE"]}>
-                <div className="page"><div className="page-header"><h2>Reports</h2><p>Coming soon</p></div></div>
+                <ReportsPage />
               </ProtectedRoute>
             } />
             <Route path="/insights" element={
-              <ProtectedRoute allowedRoles={["ADMIN", "FINANCE"]}>
-                <Insights />
-              </ProtectedRoute>
+              <Navigate to="/reports" replace/>
             } />
 
             {/* ADMIN only */}
