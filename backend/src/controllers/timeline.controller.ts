@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { PrismaClient, TimelineType, TimelineAction, ReferenceType } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -78,6 +78,9 @@ export const updateTimelineEntry = async (
   res: Response
 ) => {
   try {
+    if (!["ADMIN", "FINANCE"].includes(req.auth?.role ?? "")) {
+  return res.status(403).json({ message: "Forbidden" });
+    }
     const { id } = req.params;
     const {
       type,
@@ -113,6 +116,9 @@ export const deleteTimelineEntry = async (
   res: Response
 ) => {
   try {
+    if (!["ADMIN", "FINANCE"].includes(req.auth?.role ?? "")) {
+  return res.status(403).json({ message: "Forbidden" });
+}
     const { id } = req.params;
     await prisma.timelineEntry.delete({ where: { id } });
     res.json({ message: "Entry deleted" });

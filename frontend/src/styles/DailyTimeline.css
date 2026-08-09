@@ -1,5 +1,5 @@
 /* ============================================
-   Daily Timeline — Warm Teal Design
+   Daily Timeline
    ============================================ */
 
 .timeline-page {
@@ -7,7 +7,6 @@
   flex-direction: column;
   gap: var(--space-6);
   padding: var(--space-6);
-  background: transparent;
 }
 
 /* Header */
@@ -36,9 +35,9 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-sm);
-  color: var(--color-text-primary);
   font-size: var(--font-size-sm);
   font-weight: 600;
+  color: var(--color-text-primary);
   white-space: nowrap;
 }
 
@@ -71,7 +70,7 @@
 .timeline-list {
   list-style: none;
   margin: 0;
-  padding: 0 0 0 1.2rem;
+  padding: 0 0 0 1.4rem;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -81,7 +80,7 @@
 .timeline-list::before {
   content: "";
   position: absolute;
-  left: 0.5rem;
+  left: 0.55rem;
   top: 0;
   bottom: 0;
   width: 2px;
@@ -91,14 +90,11 @@
 /* Entry */
 .timeline-entry {
   position: relative;
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-4);
 }
 
 .timeline-marker {
   position: absolute;
-  left: -1.2rem;
+  left: -1.4rem;
   top: 1.25rem;
   width: 1rem;
   display: flex;
@@ -106,8 +102,8 @@
 }
 
 .timeline-dot {
-  width: 0.8rem;
-  height: 0.8rem;
+  width: 0.85rem;
+  height: 0.85rem;
   border-radius: 50%;
   background: var(--color-primary);
   border: 3px solid var(--color-bg);
@@ -137,12 +133,12 @@
 
 /* Card */
 .timeline-card {
-  flex: 1;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: var(--space-4);
   box-shadow: var(--shadow-sm);
+  cursor: pointer;
   transition:
     transform var(--transition-fast),
     box-shadow var(--transition-fast),
@@ -155,16 +151,39 @@
   border-color: rgba(15, 118, 110, 0.18);
 }
 
+.timeline-card.open {
+  border-color: rgba(15, 118, 110, 0.28);
+  box-shadow: var(--shadow-md);
+}
+
 /* Top row */
 .timeline-top {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   gap: var(--space-3);
   margin-bottom: var(--space-3);
   flex-wrap: wrap;
 }
 
+.timeline-top-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.timeline-chevron {
+  color: var(--color-text-muted);
+  transition: transform var(--transition-fast);
+  font-size: 1rem;
+}
+
+.timeline-chevron.open {
+  transform: rotate(180deg);
+}
+
+/* Badges */
 .timeline-badge {
   display: inline-flex;
   align-items: center;
@@ -180,25 +199,21 @@
 .timeline-badge.transaction {
   background: var(--color-success-light);
   color: var(--color-success);
-  border-color: rgba(31, 138, 91, 0.22);
 }
 
 .timeline-badge.expense {
   background: var(--color-warning-light);
   color: var(--color-warning);
-  border-color: rgba(183, 121, 31, 0.22);
 }
 
 .timeline-badge.payroll {
   background: var(--color-info-light);
   color: var(--color-info);
-  border-color: rgba(37, 99, 166, 0.22);
 }
 
 .timeline-badge.note {
   background: rgba(199, 168, 106, 0.16);
   color: #8a6b2f;
-  border-color: rgba(199, 168, 106, 0.28);
 }
 
 .timeline-action {
@@ -209,16 +224,78 @@
   letter-spacing: 0.04em;
 }
 
-/* Main text */
+/* Message */
 .timeline-message {
   color: var(--color-text-primary);
   line-height: 1.55;
-  font-size: var(--font-size-base);
 }
 
 .timeline-message strong {
   color: var(--color-primary);
-  font-weight: 700;
+}
+
+/* Details */
+.timeline-details {
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--font-size-sm);
+}
+
+.detail-row span {
+  color: var(--color-text-secondary);
+}
+
+.detail-row strong {
+  color: var(--color-text-primary);
+}
+
+/* Actions */
+.timeline-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.btn-secondary,
+.btn-danger {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: 0.45rem 0.85rem;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.btn-secondary:hover {
+  background: var(--color-surface-hover);
+  border-color: rgba(15, 118, 110, 0.25);
+  color: var(--color-primary);
+}
+
+.btn-danger {
+  color: var(--color-danger);
+}
+
+.btn-danger:hover {
+  background: var(--color-danger-light);
+  border-color: rgba(194, 65, 65, 0.28);
 }
 
 /* Footer */
@@ -278,6 +355,149 @@
   color: var(--color-text-secondary);
 }
 
+.timeline-card.editing {
+  cursor: default;
+}
+
+.timeline-edit-header {
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+}
+
+.timeline-edit-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.timeline-edit-fields label,
+.timeline-edit-action label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.timeline-edit-fields input,
+.timeline-edit-fields select,
+.timeline-edit-fields textarea,
+.timeline-edit-action select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font: inherit;
+}
+
+.timeline-edit-fields textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.timeline-edit-fields input:focus,
+.timeline-edit-fields select:focus,
+.timeline-edit-fields textarea:focus,
+.timeline-edit-action select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-focus);
+}
+
+.timeline-edit-action {
+  margin-bottom: var(--space-3);
+}
+
+.timeline-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-danger {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.9rem;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-hover);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary {
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+}
+
+.btn-secondary:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-primary);
+}
+
+.btn-danger {
+  background: var(--color-surface);
+  color: var(--color-danger);
+}
+
+.btn-danger:hover {
+  background: var(--color-danger-light);
+  border-color: rgba(194, 65, 65, 0.28);
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled,
+.btn-danger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.timeline-error {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid rgba(194, 65, 65, 0.25);
+  border-radius: var(--radius-md);
+  background: var(--color-danger-light);
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+}
+
+@media (max-width: 640px) {
+  .timeline-edit-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .timeline-actions {
+    flex-wrap: wrap;
+  }
+
+  .timeline-actions button {
+    flex: 1;
+  }
+}
+
 /* Responsive */
 @media (max-width: 720px) {
   .timeline-page {
@@ -299,5 +519,10 @@
 
   .timeline-time {
     width: 100%;
+  }
+
+  .detail-row {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
