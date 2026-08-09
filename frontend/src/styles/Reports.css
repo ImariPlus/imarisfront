@@ -1,0 +1,182 @@
+/* Tabs */
+.reports-tabs {
+  display: flex;
+  gap: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+  margin: var(--space-2) 0 var(--space-4);
+}
+
+.reports-tab {
+  background: none;
+  border: none;
+  padding: 0.6rem 0.2rem;
+  margin-right: var(--space-5);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.reports-tab:hover {
+  color: var(--color-text-primary);
+}
+
+.reports-tab.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+.reports-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.period-selector {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.period-selector select {
+  width: auto;
+}
+
+/* Summary cards */
+.reports-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-4);
+}
+
+.report-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: 1.2rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  box-shadow: var(--shadow-md);
+  border-left: 4px solid transparent;
+}
+
+.report-card--revenue    { border-left-color: var(--color-success); }
+.report-card--expenses   { border-left-color: var(--color-warning); }
+.report-card--payroll    { border-left-color: var(--color-primary); }
+.report-card--positive   { border-left-color: var(--color-info); }
+.report-card--negative   { border-left-color: var(--color-danger); }
+
+.report-card__label {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.report-card__value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.report-card__sub {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+/* Charts */
+.reports-chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.reports-chart h3 {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.reports-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+@media (max-width: 768px) {
+  .reports-row { grid-template-columns: 1fr; }
+}
+
+/* Clinician list */
+.clinician-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+
+.clinician-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.clinician-avatar {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.clinician-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.clinician-name-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.clinician-name {
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.clinician-amount {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.clinician-bar-track {
+  height: 6px;
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.clinician-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.4s ease;
+}
+
+.clinician-meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}

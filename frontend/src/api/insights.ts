@@ -1,27 +1,11 @@
 import api from "./index";
 
-export interface InsightsData {
+export interface InsightsResult {
+  insights: string;
   period: { month: number; year: number };
-  revenue: {
-    gross: number;
-    discounts: number;
-    net: number;
-    transactionCount: number;
-    byPhysician: Record<string, number>;
-  };
-  expenses: {
-    total: number;
-    byCategory: Record<string, number>;
-  };
-  payroll: {
-    total: number;
-    advances: number;
-    staffCount: number;
-  };
-  netPosition: number;
 }
 
-export const getInsightsData = async (month: number, year: number) => {
-  const res = await api.get("/api/insights", { params: { month, year } });
-  return res.data as InsightsData;
+export const analyzeInsights = async (month: number, year: number) => {
+  const res = await api.post("/api/insights/analyze", { month, year });
+  return res.data as InsightsResult;
 };
