@@ -9,7 +9,6 @@ import ExpenseTracker from "./components/ExpenseTracker";
 import Login from "./components/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Insights from "./components/Insights";
-import ClinicalStaff from "./components/ClinicalStaff";
 import Settings from "./components/Settings";
 import "./App.css";
 
@@ -24,71 +23,51 @@ const App: React.FC = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-            {/* Protected Routes */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/transactions"
-              element={
-                <ProtectedRoute>
-                  <NewTransaction />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/timeline"
-              element={
-                <ProtectedRoute>
-                  <DailyTimeline />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/payroll"
-              element={
-                <ProtectedRoute>
-                  <Payroll />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/expenses"
-              element={
-                <ProtectedRoute>
-                  <ExpenseTracker />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/insights"
-              element={
-                <ProtectedRoute>
-                  <Insights />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/clinical-staff"
-              element={
-                <ProtectedRoute>
-                  <ClinicalStaff />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/settings" element={
+            {/* All roles */}
+            <Route path="/dashboard" element={
               <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/transactions" element={
+              <ProtectedRoute>
+                <NewTransaction />
+              </ProtectedRoute>
+            } />
+            <Route path="/timeline" element={
+              <ProtectedRoute>
+                <DailyTimeline />
+              </ProtectedRoute>
+            } />
+
+            {/* FINANCE + ADMIN only */}
+            <Route path="/payroll" element={
+              <ProtectedRoute allowedRoles={["ADMIN", "FINANCE"]}>
+                <Payroll />
+              </ProtectedRoute>
+            } />
+            <Route path="/expenses" element={
+              <ProtectedRoute allowedRoles={["ADMIN", "FINANCE"]}>
+                <ExpenseTracker />
+              </ProtectedRoute>
+            } />
+            <Route path="/reports" element={
+              <ProtectedRoute allowedRoles={["ADMIN", "FINANCE"]}>
+                <div className="page"><div className="page-header"><h2>Reports</h2><p>Coming soon</p></div></div>
+              </ProtectedRoute>
+            } />
+            <Route path="/insights" element={
+              <ProtectedRoute allowedRoles={["ADMIN", "FINANCE"]}>
+                <Insights />
+              </ProtectedRoute>
+            } />
+
+            {/* ADMIN only */}
+            <Route path="/settings" element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
                 <Settings />
               </ProtectedRoute>
-              } 
-            />
+            } />
 
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>

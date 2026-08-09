@@ -28,7 +28,7 @@
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-1);
   flex-grow: 1;
 }
 
@@ -39,6 +39,9 @@
   padding: 0.6rem 0.75rem;
   border-radius: var(--radius-sm);
   transition: background var(--transition-fast), color var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
 }
 
 .sidebar-nav a:hover,
@@ -48,24 +51,7 @@
   font-weight: 600;
 }
 
-.logout-btn {
-  background-color: transparent;
-  color: var(--color-danger);
-  border: 1px solid var(--color-danger);
-  padding: 0.6rem 1rem;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-weight: 500;
-  font-size: var(--font-size-base);
-  transition: background var(--transition-fast), color var(--transition-fast);
-  margin-top: var(--space-4);
-}
-
-.logout-btn:hover {
-  background-color: var(--color-danger);
-  color: white;
-}
-
+/* Bottom section */
 .sidebar-bottom {
   display: flex;
   flex-direction: column;
@@ -74,7 +60,9 @@
 }
 
 .settings-link {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
   text-decoration: none;
   color: var(--color-sidebar-text);
   font-size: var(--font-size-base);
@@ -88,4 +76,25 @@
   background-color: var(--color-sidebar-item-active);
   color: var(--color-sidebar-text-active);
   font-weight: 600;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background-color: transparent;
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-weight: 500;
+  font-size: var(--font-size-base);
+  transition: background var(--transition-fast), color var(--transition-fast);
+  width: 100%;
+}
+
+.logout-btn:hover {
+  background-color: var(--color-danger);
+  color: white;
 }

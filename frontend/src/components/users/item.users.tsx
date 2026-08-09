@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Pencil, Trash2 } from "lucide-react";
 import { type AppUser, updateUser, deleteUser, type UserRole } from "../../api/users";
 
 const ROLE_LABELS: Record<UserRole, string> = {
@@ -90,13 +91,17 @@ export default function ItemUser({ user, currentUserId, onUpdated, onDeleted }: 
         {ROLE_LABELS[user.role]}
       </span>
       <div className="user-item__actions">
-        <button className="btn-ghost" onClick={() => setEditing(true)} disabled={loading}>✏️</button>
+        <button className="btn-ghost" onClick={() => setEditing(true)} disabled={loading} title="Edit">
+          <Pencil size={15} />
+        </button>
         <button
           className="btn-ghost"
           onClick={handleDelete}
           disabled={loading || isSelf}
           title={isSelf ? "You can't delete your own account" : "Remove account"}
-        >🗑️</button>
+        >
+          <Trash2 size={15} />
+        </button>
       </div>
     </div>
   );

@@ -5,8 +5,10 @@ import {
   updateTimelineEntry,
   deleteTimelineEntry,
 } from "../controllers/timeline.controller";
+import { authenticate } from "../middlewares/auth.middleware";
 
 const router = Router();
+router.use(authenticate);
 
 router.get("/", getDailyTimeline);
 router.post("/", addTimelineEntry);

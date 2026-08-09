@@ -1,10 +1,11 @@
 import { useState } from "react";
+import { Pencil, Trash2, Lock, LockOpen } from "lucide-react";
 import {
   type ClinicalStaff, updateClinicalStaff, deleteClinicalStaff,
   type ClinicalRole, CLINICAL_ROLE_LABELS, CLINICAL_ROLE_COLORS,
 } from "../../api/clinicalStaff";
 
-const ROLES = Object.entries(CLINICAL_ROLE_LABELS) as unknown as [ClinicalRole, string[]];
+const ROLES = Object.entries(CLINICAL_ROLE_LABELS) as unknown as [ClinicalRole, string][];
 
 interface Props {
   staff: ClinicalStaff;
@@ -41,8 +42,11 @@ export default function ItemClinicalStaff({ staff, onUpdated, onDeleted, canEdit
     try {
       await updateClinicalStaff(staff.id, { active: !staff.active });
       onUpdated();
-    } catch {
-      // ignore toggle failures
+    } catch (err: unknown) {
+      setError(
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+        ?? "Failed to update status."
+      );
     } finally {
       setLoading(false);
     }
@@ -95,16 +99,15 @@ export default function ItemClinicalStaff({ staff, onUpdated, onDeleted, canEdit
       </span>
       {canEdit && (
         <div className="cs-item__actions">
-          <button className="btn-ghost" onClick={() => setEditing(true)} disabled={loading} title="Edit">✏️</button>
-          <button
-            className="btn-ghost"
-            onClick={handleToggleActive}
-            disabled={loading}
-            title={staff.active ? "Deactivate" : "Reactivate"}
-          >
-            {staff.active ? "🔒" : "🔓"}
+          <button className="btn-ghost" onClick={() => setEditing(true)} disabled={loading} title="Edit">
+            <Pencil size={15} />
           </button>
-          <button className="btn-ghost" onClick={handleDelete} disabled={loading} title="Delete">🗑️</button>
+          <button className="btn-ghost" onClick={handleToggleActive} disabled={loading} title={staff.active ? "Deactivate" : "Reactivate"}>
+            {staff.active ? <Lock size={15} /> : <LockOpen size={15} />}
+          </button>
+          <button className="btn-ghost" onClick={handleDelete} disabled={loading} title="Delete">
+            <Trash2 size={15} />
+          </button>
         </div>
       )}
       {error && <p className="field-error" style={{ width: "100%", marginTop: "0.25rem" }}>{error}</p>}

@@ -1,6 +1,10 @@
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import {
+  LayoutDashboard, ArrowRightLeft, Clock, Wallet,
+  Receipt, BarChart2, Settings, LogOut
+} from "lucide-react";
 import "../styles/sidebar.css";
 
 interface JwtPayload {
@@ -30,6 +34,9 @@ const Sidebar: React.FC = () => {
     navigate("/login", { replace: true });
   };
 
+  const isFinance = userRole === "FINANCE";
+  const isAdmin = userRole === "ADMIN";
+
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
@@ -38,24 +45,40 @@ const Sidebar: React.FC = () => {
       </div>
 
       <nav className="sidebar-nav">
-        <NavLink to="/dashboard">Dashboard</NavLink>
-        <NavLink to="/transactions">New Transaction</NavLink>
-        <NavLink to="/timeline">Daily Timeline</NavLink>
-        <NavLink to="/payroll">Payroll</NavLink>
-        <NavLink to="/expenses">Expense Tracker</NavLink>
-        {(userRole === "ADMIN" || userRole === "FINANCE") && (
-          <NavLink to="/insights">Monthly Insights</NavLink>
+        <NavLink to="/dashboard">
+          <LayoutDashboard size={16} /> Dashboard
+        </NavLink>
+        <NavLink to="/transactions">
+          <ArrowRightLeft size={16} /> Transactions
+        </NavLink>
+        <NavLink to="/timeline">
+          <Clock size={16} /> Daily Timeline
+        </NavLink>
+        {(isFinance || isAdmin) && (
+          <NavLink to="/payroll">
+            <Wallet size={16} /> Payroll
+          </NavLink>
+        )}
+        {(isFinance || isAdmin) && (
+          <NavLink to="/expenses">
+            <Receipt size={16} /> Expenses
+          </NavLink>
+        )}
+        {(isFinance || isAdmin) && (
+          <NavLink to="/reports">
+            <BarChart2 size={16} /> Reports
+          </NavLink>
         )}
       </nav>
 
       <div className="sidebar-bottom">
-        {userRole === "ADMIN" && (
+        {isAdmin && (
           <NavLink to="/settings" className="settings-link">
-            ⚙️ Settings
+            <Settings size={16} /> Settings
           </NavLink>
         )}
         <button onClick={handleLogout} className="logout-btn">
-          Logout
+          <LogOut size={16} /> Logout
         </button>
       </div>
     </aside>

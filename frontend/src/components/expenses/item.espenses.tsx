@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Pencil, Trash2 } from "lucide-react";
 import { type Expense, updateExpense, deleteExpense, type ExpenseCategory } from "../../api/expenses";
 
 const CATEGORY_LABELS: Record<ExpenseCategory, string> = {
@@ -11,12 +12,12 @@ const CATEGORY_LABELS: Record<ExpenseCategory, string> = {
 };
 
 const CATEGORY_COLORS: Record<ExpenseCategory, string> = {
-  SUPPLIES: "#6366f1",
-  UTILITIES: "#0ea5e9",
-  RENT: "#f59e0b",
-  SALARY: "#10b981",
-  ADVANCE: "#f43f5e",
-  OTHER: "#94a3b8",
+  SUPPLIES: "var(--color-cat-supplies)",
+  UTILITIES: "var(--color-cat-utilities)",
+  RENT: "var(--color-cat-rent)",
+  SALARY: "var(--color-cat-salary)",
+  ADVANCE: "var(--color-cat-advance)",
+  OTHER: "var(--color-cat-other)",
 };
 
 const CATEGORIES = Object.entries(CATEGORY_LABELS) as [ExpenseCategory, string][];
@@ -72,41 +73,16 @@ export default function ItemExpense({ expense, onUpdated, onDeleted, canEdit }: 
     return (
       <form className="expense-item editing" onSubmit={handleUpdate}>
         <div className="editing-fields">
-          <input
-            type="text"
-            placeholder="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <input
-            type="number"
-            placeholder="Amount"
-            value={amount}
-            onChange={(e) => setAmount(Number(e.target.value))}
-            min={1}
-          />
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value as ExpenseCategory)}
-          >
-            {CATEGORIES.map(([val, label]) => (
-              <option key={val} value={val}>{label}</option>
-            ))}
+          <input type="text" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
+          <input type="number" placeholder="Amount" value={amount} onChange={(e) => setAmount(Number(e.target.value))} min={1} />
+          <select value={category} onChange={(e) => setCategory(e.target.value as ExpenseCategory)}>
+            {CATEGORIES.map(([val, label]) => <option key={val} value={val}>{label}</option>)}
           </select>
-          <input
-            type="text"
-            placeholder="Notes (optional)"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
+          <input type="text" placeholder="Notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} />
         </div>
         <div className="expense-item-actions">
-          <button type="submit" disabled={loading}>
-            {loading ? "Saving..." : "Save"}
-          </button>
-          <button type="button" onClick={() => setEditing(false)}>
-            Cancel
-          </button>
+          <button type="submit" className="btn-primary" disabled={loading}>{loading ? "Saving..." : "Save"}</button>
+          <button type="button" className="btn-ghost" onClick={() => setEditing(false)}>Cancel</button>
         </div>
       </form>
     );
@@ -114,11 +90,7 @@ export default function ItemExpense({ expense, onUpdated, onDeleted, canEdit }: 
 
   return (
     <div className="expense-item">
-      <span
-        className="expense-category-dot"
-        style={{ background: color }}
-        title={CATEGORY_LABELS[expense.category]}
-      />
+      <span className="expense-category-dot" style={{ background: color }} title={CATEGORY_LABELS[expense.category]} />
       <div className="expense-item-main">
         <span className="expense-title">{expense.title}</span>
         <span className="expense-meta">
@@ -129,13 +101,15 @@ export default function ItemExpense({ expense, onUpdated, onDeleted, canEdit }: 
       <span className="expense-category-badge" style={{ color, borderColor: color }}>
         {CATEGORY_LABELS[expense.category]}
       </span>
-      <span className="expense-amount">
-        {expense.amount.toLocaleString()} RWF
-      </span>
+      <span className="expense-amount">{expense.amount.toLocaleString()} RWF</span>
       {canEdit && (
         <div className="expense-item-actions">
-          <button onClick={() => setEditing(true)} disabled={loading}>✏️</button>
-          <button onClick={handleDelete} disabled={loading}>🗑️</button>
+          <button className="btn-ghost" onClick={() => setEditing(true)} disabled={loading} title="Edit">
+            <Pencil size={15} />
+          </button>
+          <button className="btn-ghost" onClick={handleDelete} disabled={loading} title="Delete">
+            <Trash2 size={15} />
+          </button>
         </div>
       )}
     </div>
