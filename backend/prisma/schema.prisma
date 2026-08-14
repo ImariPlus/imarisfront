@@ -4,209 +4,227 @@ generator client {
 
 datasource db {
     provider = "sqlite"
-      url      = env("DATABASE_URL")
+    url      = env("DATABASE_URL")
 }
 
 model User {
     id        String   @id @default(cuid())
-      name      String
-        email     String   @unique
-          password  String
-            role      UserRole @default(USER)
-              createdAt DateTime @default(now())
-                updatedAt DateTime @updatedAt
+    name      String
+    email     String   @unique
+    password  String
+    role      UserRole @default(USER)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
-                  transactions  Transaction[]
-                    staffPayrolls StaffPayroll[]
+    transactions  Transaction[]
 
-                      performedTimelineEntries TimelineEntry[] @relation("PerformedBy")
-                        approvedTimelineEntries  TimelineEntry[] @relation("ApprovedBy")
+    performedTimelineEntries TimelineEntry[] @relation("PerformedBy")
+    approvedTimelineEntries  TimelineEntry[] @relation("ApprovedBy")
 
-                          recordedExpenses Expense[]  @relation("RecordedExpenses")
-                            advances         Expense[]  @relation("StaffAdvances")
-                              employees        Employee[]
+    recordedExpenses Expense[]  @relation("RecordedExpenses")
+    employees        Employee[]
 }
 
 enum UserRole {
     ADMIN
-      USER
-        FINANCE
+    USER
+    FINANCE
 }
 
 model Physician {
-    id        String   @id @default(cuid())
-      name      String   @unique
-      role ClinicalRole @default(DOCTOR)
-        active    Boolean  @default(true)
-          createdAt DateTime @default(now())
+    id             String       @id @default(cuid())
+    name           String       @unique
+    role           ClinicalRole @default(DOCTOR)
+    payType        PayType      @default(FIXED)
+    commissionRate Float        @default(0)
+    basePay        Float        @default(0)
+    active         Boolean      @default(true)
+    createdAt      DateTime     @default(now())
 
-            transactions Transaction[]
+    // Optional link so a physician can also be paid through payroll.
+    // Not every physician needs to be an employee (e.g. a visiting/locum doctor
+    // who's paid outside the system), so this stays optional.
+    employeeId String?   @unique
+    employee   Employee? @relation(fields: [employeeId], references: [id])
+
+    transactions Transaction[]
+}
+
+enum PayType {
+    FIXED
+    COMMISSION_ONLY
+    BASE_PLUS_COMMISSION
 }
 
 enum ClinicalRole {
-  DOCTOR
-  NURSE
-  LAB_TECH
-  OTHER
+    DOCTOR
+    NURSE
+    LAB_TECH
+    OTHER
 }
 
 model Transaction {
     id            String        @id @default(cuid())
-      clientName    String
-        amount        Float
-          discount      Float?
-            notes         String?
-              paymentMethod PaymentMethod
+    clientName    String
+    amount        Float
+    discount      Float?
+    notes         String?
+    paymentMethod PaymentMethod
 
-                physicianId String
-                  physician   Physician @relation(fields: [physicianId], references: [id])
+    physicianId String
+    physician   Physician @relation(fields: [physicianId], references: [id])
 
-                    createdById String
-                      createdBy   User   @relation(fields: [createdById], references: [id])
+    createdById String
+    createdBy   User   @relation(fields: [createdById], references: [id])
 
-                        createdAt DateTime @default(now())
+    createdAt DateTime @default(now())
 
-                          @@index([createdAt])
+    @@index([createdAt])
 }
 
 enum PaymentMethod {
     CASH
-      MOBILE
-        BANK
+    MOBILE
+    BANK
 }
 
 model TimelineEntry {
     id        String          @id @default(cuid())
-      type      TimelineType
-        action    TimelineAction?
-          createdAt DateTime        @default(now())
+    type      TimelineType
+    action    TimelineAction?
+    createdAt DateTime        @default(now())
 
-            performedById String?
-              performedBy   User?   @relation("PerformedBy", fields: [performedById], references: [id])
+    performedById String?
+    performedBy   User?   @relation("PerformedBy", fields: [performedById], references: [id])
 
-                approvedById String?
-                  approvedBy   User?   @relation("ApprovedBy", fields: [approvedById], references: [id])
+    approvedById String?
+    approvedBy   User?   @relation("ApprovedBy", fields: [approvedById], references: [id])
 
-                    referenceId   String?
-                      referenceType ReferenceType?
+    referenceId   String?
+    referenceType ReferenceType?
 
-                        metadata Json?
+    metadata Json?
 
-                          @@index([createdAt])
-                            @@index([referenceId])
+    @@index([createdAt])
+    @@index([referenceId])
 }
 
 enum TimelineType {
     TRANSACTION
-      EXPENSE
-        PAYROLL
-          NOTE
+    EXPENSE
+    PAYROLL
+    NOTE
 }
 
 enum TimelineAction {
     CREATED
-      UPDATED
-        DELETED
-          APPROVED
-            PAID
+    UPDATED
+    DELETED
+    APPROVED
+    PAID
 }
 
 enum ReferenceType {
     TRANSACTION
-      EXPENSE
-        PAYROLL
+    EXPENSE
+    PAYROLL
 }
 
 model StaffPayroll {
-    id      String @id @default(cuid())
-      staffId String
-        staff   User   @relation(fields: [staffId], references: [id])
+    id String @id @default(cuid())
 
-          month Int
-            year  Int
+    employeeId String
+    employee   Employee @relation(fields: [employeeId], references: [id])
 
-              grossPay        Float
-                advancesTaken   Float @default(0)
-                  savedAmount     Float @default(0)
-                    remainingAmount Float @default(0)
-                      netPayable      Float @default(0)
+    month Int
+    year  Int
 
-                        status PayrollStatus @default(PENDING)
+    grossPay        Float
+    advancesTaken   Float @default(0)
+    savedAmount     Float @default(0)
+    remainingAmount Float @default(0)
+    netPayable      Float @default(0)
 
-                          createdAt  DateTime  @default(now())
-                            updatedAt  DateTime  @updatedAt
-                              employee   Employee? @relation(fields: [employeeId], references: [id])
-                                employeeId String?
+    status PayrollStatus @default(PENDING)
 
-                                  @@unique([staffId, month, year])
-                                    @@index([createdAt])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([employeeId, month, year])
+    @@index([createdAt])
 }
 
 enum PayrollStatus {
     PENDING
-      CLOSED
-        PAID
+    CLOSED
+    PAID
 }
 
 model Expense {
     id        String          @id @default(cuid())
-      title     String
-        amount    Float
-          category  ExpenseCategory
-            notes     String?
-              createdAt DateTime        @default(now())
+    title     String
+    amount    Float
+    category  ExpenseCategory
+    notes     String?
+    createdAt DateTime        @default(now())
 
-                staffId String?
-                  staff   User?   @relation("StaffAdvances", fields: [staffId], references: [id])
+    // Only set (and required, enforced in code) for ADVANCE category expenses.
+    employeeId String?
+    employee   Employee? @relation("EmployeeAdvances", fields: [employeeId], references: [id])
 
-                    recordedById String
-                      recordedBy   User   @relation("RecordedExpenses", fields: [recordedById], references: [id])
+    recordedById String
+    recordedBy   User   @relation("RecordedExpenses", fields: [recordedById], references: [id])
 
-                        @@index([createdAt])
+    @@index([createdAt])
 }
 
 enum ExpenseCategory {
     SUPPLIES
-      UTILITIES
-        RENT
-          SALARY
-            ADVANCE
-              OTHER
+    UTILITIES
+    RENT
+    SALARY
+    ADVANCE
+    OTHER
 }
 
 model PayrollAccrual {
     id        String @id @default(cuid())
-      month     String
-        staffName String
+    month     String
+    staffName String
 
-          expectedPay Float
-            savedSoFar  Float @default(0)
-              paidSoFar   Float @default(0)
+    expectedPay Float
+    savedSoFar  Float @default(0)
+    paidSoFar   Float @default(0)
 
-                createdAt DateTime @default(now())
-                  updatedAt DateTime @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 }
 
 model Employee {
-    id         String  @id @default(cuid())
-      name       String
-        roles      EmployeeRole @default(RECEPTIONIST)
-          department String?
-            userId     String? // optional link if this employee is also a system user
-              user       User?   @relation(fields: [userId], references: [id])
+    id         String       @id @default(cuid())
+    name       String
+    roles      EmployeeRole @default(RECEPTIONIST)
+    department String?
+    active     Boolean      @default(true)
 
-                payrolls  StaffPayroll[]
-                  createdAt DateTime       @default(now())
-                    updatedAt DateTime       @updatedAt
+    userId String? @unique // optional link if this employee is also a system user
+    user   User?   @relation(fields: [userId], references: [id])
+
+    physician Physician? // optional link if this employee is also a clinician
+
+    payrolls  StaffPayroll[]
+    advances  Expense[]      @relation("EmployeeAdvances")
+    createdAt DateTime       @default(now())
+    updatedAt DateTime       @updatedAt
 }
 
 enum EmployeeRole {
     DOCTOR
-      NURSE
-        LAB_TECH
-          CLEANER
-            RECEPTIONIST
-              CASHIER
-                ADMIN
-                  MANAGER
+    NURSE
+    LAB_TECH
+    CLEANER
+    RECEPTIONIST
+    CASHIER
+    ADMIN
+    MANAGER
 }

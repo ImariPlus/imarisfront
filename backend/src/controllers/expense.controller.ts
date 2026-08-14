@@ -30,6 +30,9 @@ export const getExpenses = async (req: Request, res: Response) => {
       recordedBy: {
         select: { id: true, name: true, role: true },
       },
+      employee: {
+        select: { id: true, name: true },
+      },
     },
   });
 
@@ -44,7 +47,7 @@ export const createExpense = async (
   const auth = req.auth;
   if (!auth) return res.status(401).json({ message: "Unauthenticated" });
 
-  const { title, amount, category, notes } = req.body;
+  const { title, amount, category, notes, employeeId } = req.body;
 
   if (!title || !amount || !category) {
     return res.status(400).json({ message: "Missing required fields" });
@@ -52,6 +55,10 @@ export const createExpense = async (
 
   if (!Object.values(ExpenseCategory).includes(category)) {
     return res.status(400).json({ message: "Invalid expense category" });
+  }
+
+  if (category === ExpenseCategory.ADVANCE && !employeeId) {
+    return res.status(400).json({ message: "employeeId is required for staff advances" });
   }
 
   try {
@@ -62,6 +69,7 @@ export const createExpense = async (
           amount,
           category,
           notes,
+          employeeId: category === ExpenseCategory.ADVANCE ? employeeId : null,
           recordedBy: { connect: { id: auth.id } },
         },
       });

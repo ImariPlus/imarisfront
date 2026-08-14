@@ -1,7 +1,7 @@
 import { Router } from "express";
 import * as controller from "../controllers/physicians.controller";
 import { authenticate } from "../middlewares/auth.middleware";
-import { isAdmin } from "../middlewares/role.middleware";
+import { allowRoles, isAdmin } from "../middlewares/role.middleware";
 
 const router = Router();
 
@@ -13,5 +13,6 @@ router.delete("/:id", authenticate, isAdmin, controller.deletePhysician);
 router.get("/:id/stats", authenticate, controller.getPhysicianStats);
 router.get("/:id/transactions", authenticate, controller.getPhysicianTransactions);
 router.get("/:id/payroll-review", authenticate, controller.getPhysicianPayrollReview);
+router.get("/payroll-summary", authenticate, allowRoles("ADMIN", "FINANCE"), controller.getPhysicianPayrollSummary);
 
 export default router;

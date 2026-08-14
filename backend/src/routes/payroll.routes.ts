@@ -4,7 +4,8 @@ import {
     initPayroll,
     updateDailySave,
     finalizePayroll,
-    listPayrolls } from "../controllers/payroll.controller";
+    listPayrolls,
+    previewPayroll } from "../controllers/payroll.controller";
 import { authenticate } from "../middlewares/auth.middleware";
 import { allowRoles } from "../middlewares/role.middleware";
 
@@ -12,6 +13,8 @@ const router = Router();
 
 router.use(authenticate);
 
+// Preview a suggested gross pay for commission-based employees before confirming
+router.get("/preview", allowRoles("ADMIN", "FINANCE"), previewPayroll);
 // Only Admin and Finance can initialize payroll
 router.post("/init", allowRoles("ADMIN", "FINANCE"), initPayroll);
 // Admin & Finance can update daily saved amount

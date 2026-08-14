@@ -91,7 +91,7 @@ export const getMonthlyReportData = async (
   // --- Payroll ---
   const payrolls = await prisma.staffPayroll.findMany({
     where: { month, year },
-    include: { staff: { select: { name: true } } },
+    include: { employee: { select: { name: true } } },
   });
   const totalPayroll = payrolls.reduce((s, p) => s + p.grossPay, 0);
   const totalAdvances = payrolls.reduce((s, p) => s + p.advancesTaken, 0);
