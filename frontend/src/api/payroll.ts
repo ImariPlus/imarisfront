@@ -1,79 +1,120 @@
-import axios from "axios";
+import api from "./index";
 
-const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true
-});
+export type PayrollStatus = "PENDING" | "PAID" | "CLOSED";
 
+export interface PayrollEmployee {
+  id: string;
+  name: string;
+  roles: string;
+  department: string | null;
+  physician?: {
+    id: string;
+    name: string;
+    role: string;
+    active: boolean;
+    payType?: "FIXED" | "COMMISSION";
+    commissionRate?: number | null;
+    basePay?: number | null;
+  } | null;
+  user?: {
+    id: string;
+    name: string;
+    role: string;
+  } | null;
+}
 
-// -----------------------------
-// Get all payrolls
-// -----------------------------
-export const getPayrolls = async (params?: {
-  month?: number;
-  year?: number;
-}) => {
-  const res = await API.get("/payroll", { params });
-  return res.data;
-};
+export interface StaffPayroll {
+  id: string;
 
+  employeeId: string;
 
-// -----------------------------
-// Get payroll for one staff
-// -----------------------------
-export const getPayrollByStaff = async (
-  staffId: string,
-  month: number,
-  year: number
+  employee: PayrollEmployee;
+
+  month: number;
+  year: number;
+
+  grossPay: number;
+  advancesTaken: number;
+  savedAmount: number;
+  remainingAmount: number;
+  netPayable: number;
+
+  status: PayrollStatus;
+
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PayrollPreview {
+  employeeId: string;
+  payType: "FIXED" | "COMMISSION";
+  suggestion: {
+    suggestedGrossPay: number;
+    revenue: number;
+  } | null;
+}
+
+export const getPayrolls = async (
+  params?: { month?: number; year?: number }
 ) => {
-  const res = await API.get(`/payroll/${staffId}`, {
-    params: { month, year }
-  });
+  const res = await api.get("/api/payroll", { params });
 
-  return res.data;
+  return Array.isArray(res.data)
+    ? (res.data as StaffPayroll[])
+    : [];
 };
 
-
-// -----------------------------
-// Initialize payroll
-// -----------------------------
-export const initPayroll = async (data: {
-  staffId: string;
+/**
+ * Get a suggested gross pay for an employee.
+ *
+ * For fixed-pay employees:
+ * suggestion will normally be null.
+ *
+ * For commission-based physicians:
+ * the backend can return a suggested amount based on
+ * their revenue for the selected month.
+ */
+export const previewPayroll = async (params: {
+  employeeId: string;
   month: number;
   year: number;
 }) => {
-  const res = await API.post("/payroll/init", data);
-  return res.data;
+  const res = await api.get("/api/payroll/preview", {
+    params,
+  });
+
+  return res.data as PayrollPreview;
 };
 
+export const initPayroll = async (data: {
+  employeeId: string;
+  month: number;
+  year: number;
+  grossPay: number;
+}) => {
+  const res = await api.post("/api/payroll/init", data);
 
-// -----------------------------
-// Add daily save
-// -----------------------------
+  return res.data as StaffPayroll;
+};
+
 export const addDailySave = async (data: {
-  payrollId: string;
-  amount: number;
-  note?: string;
+  employeeId: string;
+  month: number;
+  year: number;
+  amountSavedToday: number;
 }) => {
-  const res = await API.patch("/payroll/daily-save", data);
-  return res.data;
+  const res = await api.post("/api/payroll/daily-save", data);
+
+  return res.data as StaffPayroll;
 };
 
-
-// -----------------------------
-// Finalize payroll
-// -----------------------------
 export const finalizePayroll = async (data: {
-  payrollId: string;
+  employeeId: string;
+  month: number;
+  year: number;
+  status: "PAID" | "CLOSED";
 }) => {
-  const res = await API.patch("/payroll/finalize", data);
-  return res.data;
-};
+  const res = await api.put("/api/payroll/finalize", data);
 
-export default {
-  getPayrolls,
-  getPayrollByStaff,
-  initPayroll,
-  addDailySave,
-  finalizePayroll
+  return res.data as StaffPayroll;
 };

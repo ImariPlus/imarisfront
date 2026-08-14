@@ -109,7 +109,7 @@ export const getDashboardSnapshot = async (req: Request, res: Response) => {
     });
 
     const payrolls = await prisma.staffPayroll.findMany({
-      include: { staff: true },
+      include: { employee: true },
     });
 
     let totalRemainingPayroll = 0;

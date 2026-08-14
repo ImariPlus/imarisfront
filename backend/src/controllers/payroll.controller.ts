@@ -1,27 +1,71 @@
 import { Request, Response } from "express";
 import { PrismaClient, PayrollStatus, ExpenseCategory } from "@prisma/client";
-import { calculatePayrollFigures, getMonthRange, calculateMonthlyAdvances } from "../utils/payroll.math";
+import {
+  calculatePayrollFigures,
+  getMonthRange,
+  calculateMonthlyAdvances,
+  suggestGrossPay,
+} from "../utils/payroll.math";
 
 const prisma = new PrismaClient();
 
+const SAFE_EMPLOYEE_INCLUDE = {
+  physician: true,
+  user: { select: { id: true, name: true, role: true } },
+} as const;
+
 /**
- * Initialize payroll for a staff member (Admin/Finance only)
+ * GET /api/payroll/preview?employeeId=&month=&year=
+ * Returns a suggested gross pay for commission-based employees so the
+ * finance officer can review the number before confirming it. Returns
+ * suggestion: null for fixed-pay staff, meaning "enter it manually".
+ */
+export const previewPayroll = async (req: Request, res: Response) => {
+  try {
+    const employeeId = req.query.employeeId as string;
+    const month = parseInt(req.query.month as string);
+    const year = parseInt(req.query.year as string);
+
+    if (!employeeId || !month || !year) {
+      return res.status(400).json({ message: "employeeId, month and year are required" });
+    }
+
+    const employee = await prisma.employee.findUnique({
+      where: { id: employeeId },
+      include: { physician: true },
+    });
+
+    if (!employee) return res.status(404).json({ message: "Employee not found" });
+
+    const suggestion = await suggestGrossPay(employee, month, year);
+
+    res.json({
+      employeeId,
+      payType: employee.physician?.payType ?? "FIXED",
+      suggestion, // null => manual entry, otherwise { suggestedGrossPay, revenue }
+    });
+  } catch (err) {
+    console.error("Payroll preview error:", err);
+    res.status(500).json({ message: "Failed to preview payroll" });
+  }
+};
+
+/**
+ * Initialize/update payroll for an employee (Admin/Finance only)
  */
 export const initPayroll = async (req: Request, res: Response) => {
   try {
-    const { staffId, month, year, grossPay } = req.body;
+    const { employeeId, month, year, grossPay } = req.body;
 
-    if (!staffId || !month || !year || grossPay == null) {
+    if (!employeeId || !month || !year || grossPay == null) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // Check if payroll already exists
     let payroll = await prisma.staffPayroll.findUnique({
-      where: { staffId_month_year: { staffId, month, year } },
+      where: { employeeId_month_year: { employeeId, month, year } },
     });
 
-    // Calculate advances + remaining
-    const advancesTaken = await calculateMonthlyAdvances(staffId, month, year);
+    const advancesTaken = await calculateMonthlyAdvances(employeeId, month, year);
     const savedAmountValue = payroll?.savedAmount ?? 0;
 
     const { netPayable, remainingAmount } = calculatePayrollFigures({
@@ -33,10 +77,9 @@ export const initPayroll = async (req: Request, res: Response) => {
     });
 
     if (!payroll) {
-      // Create new payroll
       payroll = await prisma.staffPayroll.create({
         data: {
-          staffId,
+          employeeId,
           month,
           year,
           grossPay,
@@ -48,9 +91,8 @@ export const initPayroll = async (req: Request, res: Response) => {
         },
       });
     } else {
-      // Update existing payroll
       payroll = await prisma.staffPayroll.update({
-        where: { staffId_month_year: { staffId, month, year } },
+        where: { employeeId_month_year: { employeeId, month, year } },
         data: {
           grossPay,
           advancesTaken,
@@ -72,19 +114,19 @@ export const initPayroll = async (req: Request, res: Response) => {
  * Update daily saved amount for payroll (Admin/Finance only)
  */
 export const updateDailySave = async (req: Request, res: Response) => {
-  const { staffId, month, year, amountSavedToday } = req.body;
+  const { employeeId, month, year, amountSavedToday } = req.body;
 
-  if (!staffId || !month || !year || !amountSavedToday) {
+  if (!employeeId || !month || !year || !amountSavedToday) {
     return res.status(400).json({ message: "Missing fields" });
   }
 
   try {
     const payrollRecord = await prisma.staffPayroll.findUnique({
-      where: { staffId_month_year: { staffId, month, year } },
+      where: { employeeId_month_year: { employeeId, month, year } },
     });
 
     if (!payrollRecord) return res.status(404).json({ message: "Payroll not found" });
-    //  Prevent saving if payroll is already settled
+
     if (payrollRecord.status === PayrollStatus.PAID || payrollRecord.status === PayrollStatus.CLOSED) {
       const dailyFigures = calculatePayrollFigures({
         grossPay: payrollRecord.grossPay,
@@ -93,32 +135,31 @@ export const updateDailySave = async (req: Request, res: Response) => {
         month,
         year,
       });
-      
-      return res.status(400).json({ 
-        message: `Payroll already settled ${payrollRecord.status}. Money saved this month:`, moneySavedThisMonth: payrollRecord.savedAmount, 
+
+      return res.status(400).json({
+        message: `Payroll already settled (${payrollRecord.status}). Money saved this month:`,
+        moneySavedThisMonth: payrollRecord.savedAmount,
         ...dailyFigures,
-     });
+      });
     }
-    
-    // Get total advances for this month
+
     const { start, end } = getMonthRange(month, year);
     const totalAdvances = await prisma.expense.aggregate({
       _sum: { amount: true },
       where: {
         category: ExpenseCategory.ADVANCE,
-        staffId,
+        employeeId,
         createdAt: { gte: start, lte: end },
       },
     });
 
-    // Prevent over-saving
     const increment = Math.min(
       amountSavedToday,
       payrollRecord.netPayable - payrollRecord.savedAmount
     );
 
     const updatedPayroll = await prisma.staffPayroll.update({
-      where: { staffId_month_year: { staffId, month, year } },
+      where: { employeeId_month_year: { employeeId, month, year } },
       data: {
         savedAmount: { increment },
         advancesTaken: totalAdvances._sum.amount ?? 0,
@@ -136,7 +177,7 @@ export const updateDailySave = async (req: Request, res: Response) => {
     res.json({ ...updatedPayroll, ...dailyFigures });
   } catch (err) {
     console.error("Daily save error:", err);
-    res.status(500).json({ message: "Failed to update daily save" }); 
+    res.status(500).json({ message: "Failed to update daily save" });
   }
 };
 
@@ -145,9 +186,9 @@ export const updateDailySave = async (req: Request, res: Response) => {
  */
 export const finalizePayroll = async (req: Request, res: Response) => {
   try {
-    const { staffId, month, year, status } = req.body;
+    const { employeeId, month, year, status } = req.body;
 
-    if (!staffId || !month || !year || !status) {
+    if (!employeeId || !month || !year || !status) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
@@ -156,17 +197,16 @@ export const finalizePayroll = async (req: Request, res: Response) => {
     }
 
     const payrollRecord = await prisma.staffPayroll.findUnique({
-      where: { staffId_month_year: { staffId, month, year } },
+      where: { employeeId_month_year: { employeeId, month, year } },
     });
 
     if (!payrollRecord) return res.status(404).json({ message: "Payroll not found" });
 
-    // Prevent overpayment by capping savedAmount
     const finalSavedAmount = Math.min(payrollRecord.savedAmount, payrollRecord.netPayable);
 
     const updatedPayroll = await prisma.staffPayroll.update({
-      where: { staffId_month_year: { staffId, month, year } },
-      data: { 
+      where: { employeeId_month_year: { employeeId, month, year } },
+      data: {
         status,
         savedAmount: finalSavedAmount,
         remainingAmount: payrollRecord.netPayable - finalSavedAmount,
@@ -181,16 +221,21 @@ export const finalizePayroll = async (req: Request, res: Response) => {
 };
 
 /**
- * List all payrolls (Admin/Finance only)
+ * List all payrolls for a given month/year (Admin/Finance only).
+ * Selects only safe fields off the related User — never the password hash.
  */
 export const listPayrolls = async (req: Request, res: Response) => {
   try {
+    const month = req.query.month ? parseInt(req.query.month as string) : undefined;
+    const year = req.query.year ? parseInt(req.query.year as string) : undefined;
+
     const payrolls = await prisma.staffPayroll.findMany({
-      orderBy: [ 
-        { year: "desc" },
-        { month: "desc" }
-      ],
-      include: { staff: true },
+      where: {
+        ...(month ? { month } : {}),
+        ...(year ? { year } : {}),
+      },
+      orderBy: [{ year: "desc" }, { month: "desc" }],
+      include: { employee: { include: SAFE_EMPLOYEE_INCLUDE } },
     });
 
     res.json(payrolls);

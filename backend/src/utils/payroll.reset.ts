@@ -1,45 +1,60 @@
 // src/utils/payroll.reset.ts
-import { PrismaClient, PayrollStatus, UserRole } from "@prisma/client";
-import { calculatePayrollFigures, calculateMonthlyAdvances } from "./payroll.math";
+import { PrismaClient, PayrollStatus } from "@prisma/client";
+import { calculatePayrollFigures, calculateMonthlyAdvances, suggestGrossPay } from "./payroll.math";
 
 const prisma = new PrismaClient();
 
+// Fallback starting gross pay for an employee who has never had a payroll
+// record before and isn't a commission-based physician (nothing to calculate
+// from). Finance can adjust it via the payroll UI — this just seeds a row.
+const DEFAULT_GROSS_PAY = 150000;
+
+async function resolveGrossPay(employeeId: string, month: number, year: number, previousGrossPay?: number) {
+  const employee = await prisma.employee.findUnique({
+    where: { id: employeeId },
+    include: { physician: true },
+  });
+
+  const suggestion = employee ? await suggestGrossPay(employee, month, year) : null;
+  if (suggestion) return suggestion.suggestedGrossPay;
+
+  return previousGrossPay ?? DEFAULT_GROSS_PAY;
+}
+
 /**
  * Reset payrolls for a new month based on last month's payrolls.
- * - Copies grossPay from last month.
- * - Recalculates advances and remaining amounts.
- * - Sets savedAmount to 0.
+ * - Fixed-pay staff: carries forward last month's grossPay.
+ * - Commission-based physicians: recalculated against this month's revenue.
+ * - Recalculates advances and remaining amounts, resets savedAmount to 0.
  */
 export const resetMonthlyPayrolls = async () => {
   const today = new Date();
-  const month = today.getMonth() + 1; // JS months: 0-11
+  const month = today.getMonth() + 1;
   const year = today.getFullYear();
 
-  // Determine last month
   const lastMonth = month === 1 ? 12 : month - 1;
   const lastMonthYear = month === 1 ? year - 1 : year;
 
-  // Get all payrolls from last month
   const lastMonthPayrolls = await prisma.staffPayroll.findMany({
     where: { month: lastMonth, year: lastMonthYear },
   });
 
   for (const payroll of lastMonthPayrolls) {
-    const advancesTaken = await calculateMonthlyAdvances(payroll.staffId, month, year);
+    const grossPay = await resolveGrossPay(payroll.employeeId, month, year, payroll.grossPay);
+    const advancesTaken = await calculateMonthlyAdvances(payroll.employeeId, month, year);
 
     const { netPayable, remainingAmount } = calculatePayrollFigures({
-      grossPay: payroll.grossPay,
+      grossPay,
       advancesTaken,
-      savedAmount: 0, // reset savedAmount for new month
+      savedAmount: 0,
       month,
       year,
     });
 
-    // Upsert payroll for current month
     await prisma.staffPayroll.upsert({
-      where: { staffId_month_year: { staffId: payroll.staffId, month, year } },
+      where: { employeeId_month_year: { employeeId: payroll.employeeId, month, year } },
       update: {
-        grossPay: payroll.grossPay,
+        grossPay,
         advancesTaken,
         savedAmount: 0,
         remainingAmount,
@@ -47,10 +62,10 @@ export const resetMonthlyPayrolls = async () => {
         status: PayrollStatus.PENDING,
       },
       create: {
-        staffId: payroll.staffId,
+        employeeId: payroll.employeeId,
         month,
         year,
-        grossPay: payroll.grossPay,
+        grossPay,
         advancesTaken,
         savedAmount: 0,
         remainingAmount,
@@ -64,45 +79,49 @@ export const resetMonthlyPayrolls = async () => {
 };
 
 /**
- * Ensure payrolls exist for all staff for the current month.
- * This handles cases where the server starts after the month has begun.
+ * Ensure payrolls exist for all active employees for the current month.
+ * Handles cases where the server starts after the month has begun, or a
+ * new employee was added mid-month.
  */
 export const ensureMonthlyPayrolls = async () => {
   const today = new Date();
   const month = today.getMonth() + 1;
   const year = today.getFullYear();
 
-  // Find staff members without a payroll for this month
-  const staffWithoutPayroll = await prisma.user.findMany({
+  const employeesWithoutPayroll = await prisma.employee.findMany({
     where: {
-      role: UserRole.USER,
-      NOT: {
-        staffPayrolls: {
-          some: { month, year },
-        },
+      active: true,
+      payrolls: {
+        none: { month, year },
       },
     },
+    include: { physician: true },
   });
 
-  for (const staff of staffWithoutPayroll) {
-    // Initialize payroll for staff
+  for (const employee of employeesWithoutPayroll) {
+    const suggestion = await suggestGrossPay(employee, month, year);
+    const grossPay = suggestion ? suggestion.suggestedGrossPay : DEFAULT_GROSS_PAY;
+
     await prisma.staffPayroll.create({
       data: {
-        staffId: staff.id,
+        employeeId: employee.id,
         month,
         year,
-        grossPay: 150000, // default or pull from staff settings
+        grossPay,
         advancesTaken: 0,
         savedAmount: 0,
-        remainingAmount: 150000,
-        netPayable: 150000,
+        remainingAmount: grossPay,
+        netPayable: grossPay,
         status: PayrollStatus.PENDING,
       },
     });
   }
 
-  if (staffWithoutPayroll.length > 0) {
-    console.log("Initialized missing payrolls for current month:", staffWithoutPayroll.map(s => s.name));
+  if (employeesWithoutPayroll.length > 0) {
+    console.log(
+      "Initialized missing payrolls for current month:",
+      employeesWithoutPayroll.map((e) => e.name)
+    );
   } else {
     console.log("All payrolls already exist for the current month.");
   }
